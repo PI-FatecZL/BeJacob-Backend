@@ -1,0 +1,21 @@
+package br.com.bejacob.backend.repository;
+
+import br.com.bejacob.backend.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    User save(User user);
+
+    Optional<User> findByEmail(String email);
+
+    boolean existsByEmail(String email);
+
+    UserDetails findByLogin(String username);
+
+}
