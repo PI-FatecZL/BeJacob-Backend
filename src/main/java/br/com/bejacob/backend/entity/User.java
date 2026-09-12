@@ -1,11 +1,11 @@
 package br.com.bejacob.backend.entity;
 
-import jakarta.annotation.Nullable;
+import br.com.bejacob.backend.entity.enums.UserRoles;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Null;
 import lombok.*;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
@@ -19,7 +19,6 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode(of = "id")
-// @Inheritance(strategy = InheritanceType.JOINED)
 public class User implements UserDetails {
 
     public User(
@@ -36,19 +35,27 @@ public class User implements UserDetails {
     private String password;
     private String phone;
 
+    @Enumerated(EnumType.STRING)
+    private UserRoles role;
+
     @UpdateTimestamp
-    @Column(name = "create_at", updatable = false) // só dizendo que no banco o nome é com underline e não é atualizavel
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    private boolean isActive;
 
     public User(
             String name,
             String email,
             String password,
+            UserRoles role,
             String phone) {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.role = role;
         this.phone = phone;
+        this.isActive = true;
     }
 
     public String getLogin() {
@@ -57,7 +64,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(); // Temporario até implementação das classes filhas cliente e admin
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
