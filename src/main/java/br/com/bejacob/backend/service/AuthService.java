@@ -6,6 +6,8 @@ import br.com.bejacob.backend.dto.auth.LoginRequest;
 import br.com.bejacob.backend.dto.auth.RegisterUserRequest;
 import br.com.bejacob.backend.dto.auth.RegisterUserResponse;
 import br.com.bejacob.backend.entity.User;
+import br.com.bejacob.backend.entity.enums.UserRoles;
+import br.com.bejacob.backend.mapper.UserMapper;
 import br.com.bejacob.backend.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -21,16 +23,19 @@ public class AuthService {
     private final TokenService tokenService;
     private final UserRepository repository;
     private final PasswordEncoder encoder;
+    private final UserMapper userMapper;
 
     public AuthService(
             AuthenticationManager manager,
             TokenService tokenService,
             UserRepository repository,
-            PasswordEncoder encoder) {
+            PasswordEncoder encoder,
+            UserMapper userMapper) {
         this.manager = manager;
         this.tokenService = tokenService;
         this.repository = repository;
         this.encoder = encoder;
+        this.userMapper = userMapper;
     }
 
     public RegisterUserResponse register(RegisterUserRequest request) {
@@ -39,14 +44,16 @@ public class AuthService {
             throw new RuntimeException("Email já cadastrado");
         }
         String hashedPassword = encoder.encode(request.password());
-        User user = new User(
+        RegisterUserRequest data = new RegisterUserRequest(
                 request.name(),
                 request.email(),
                 hashedPassword,
-                request.phone()
+                request.phone(),
+                UserRoles.CLIENT
         );
+        User user = userMapper.toEntity(data);
         User saved = repository.save(user);
-        return new RegisterUserResponse(saved);
+        return userMapper.toResponse(saved);
     }
 
 
