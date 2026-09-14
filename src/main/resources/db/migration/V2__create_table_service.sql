@@ -8,7 +8,7 @@ CREATE TABLE service (
                          price NUMERIC(10,2) NOT NULL,
                          active BOOLEAN DEFAULT TRUE,
 
-                         CONSTRaAINT chk_service_duration
+                         CONSTRAINT chk_service_duration
                              CHECK (duration_minutes > 0),
 
                          CONSTRAINT chk_service_price

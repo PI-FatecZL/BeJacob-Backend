@@ -39,23 +39,17 @@ public class AuthService {
     }
 
     public RegisterUserResponse register(RegisterUserRequest request) {
-
         if (repository.existsByEmail(request.email())) {
             throw new RuntimeException("Email já cadastrado");
         }
-        String hashedPassword = encoder.encode(request.password());
-        RegisterUserRequest data = new RegisterUserRequest(
-                request.name(),
-                request.email(),
-                hashedPassword,
-                request.phone(),
-                UserRoles.CLIENT
-        );
-        User user = userMapper.toEntity(data);
+
+        User user = userMapper.toEntity(request);
+        user.setPassword(encoder.encode(request.password()));
+        user.setRole(UserRoles.CLIENT);
+
         User saved = repository.save(user);
         return userMapper.toResponse(saved);
     }
-
 
     public DataToken login(LoginRequest data) {
         UsernamePasswordAuthenticationToken token =
@@ -65,9 +59,11 @@ public class AuthService {
                 );
         Authentication authentication = manager.authenticate(token);
         User user = (User) authentication.getPrincipal();
+
         if (user == null) {
             throw new BadCredentialsException("User não encontrado");
         }
+
         String tokenJWT = tokenService.generateToken(user);
         return new DataToken(
                 tokenJWT,

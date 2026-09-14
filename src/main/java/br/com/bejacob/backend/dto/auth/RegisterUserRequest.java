@@ -1,11 +1,11 @@
 package br.com.bejacob.backend.dto.auth;
 
-import br.com.bejacob.backend.entity.enums.UserRoles;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record RegisterUserRequest(
+
         @NotNull
         String name,
 
@@ -17,8 +17,7 @@ public record RegisterUserRequest(
         String password,
 
         @NotBlank
-        String phone,
+        String phone
 
-        @NotNull
-        UserRoles role) {
+) {
 }
