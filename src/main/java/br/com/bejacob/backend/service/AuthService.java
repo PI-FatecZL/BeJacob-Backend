@@ -2,13 +2,16 @@ package br.com.bejacob.backend.service;
 
 import br.com.bejacob.backend.config.security.dto.DataToken;
 import br.com.bejacob.backend.config.security.service.TokenService;
+import br.com.bejacob.backend.dto.MessageResponse;
 import br.com.bejacob.backend.dto.auth.LoginRequest;
 import br.com.bejacob.backend.dto.auth.RegisterUserRequest;
 import br.com.bejacob.backend.dto.auth.RegisterUserResponse;
+import br.com.bejacob.backend.dto.auth.UpdatePasswordRequest;
 import br.com.bejacob.backend.entity.User;
 import br.com.bejacob.backend.entity.enums.UserRoles;
 import br.com.bejacob.backend.mapper.UserMapper;
 import br.com.bejacob.backend.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -48,7 +51,7 @@ public class AuthService {
         user.setRole(UserRoles.CLIENT);
 
         User saved = repository.save(user);
-        return userMapper.toResponse(saved);
+        return userMapper.toResponseRegister(saved);
     }
 
     public DataToken login(LoginRequest data) {
@@ -70,5 +73,18 @@ public class AuthService {
                 user.getId(),
                 user.getEmail()
         );
+    }
+
+    @Transactional
+    public MessageResponse updatePassword(UpdatePasswordRequest data, Long id) {
+        User user = repository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        if (!encoder.matches(data.oldPassword(), user.getPassword())) {
+            throw new RuntimeException("Senha incorreta");
+        }
+        String newPassword = encoder.encode(data.newPassword());
+        user.updatePassword(newPassword);
+        repository.save(user);
+        return new MessageResponse("Nova Senha atualizada");
     }
 }
