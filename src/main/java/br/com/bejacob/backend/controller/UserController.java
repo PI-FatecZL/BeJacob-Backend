@@ -5,6 +5,10 @@ import br.com.bejacob.backend.dto.user.UserResponse;
 import br.com.bejacob.backend.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +29,9 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponse>> findAll(){
-        return ResponseEntity.ok(service.listAllUsers());
+    public ResponseEntity<Page<UserResponse>> findAll(
+            @ParameterObject @PageableDefault(size = 10, sort = "id") Pageable pageable){
+        return ResponseEntity.ok(service.listAllUsers(pageable));
     }
 
     @GetMapping("/{id}")
@@ -43,7 +48,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<UserResponse> delete(
+    public ResponseEntity<Void> delete(
             @PathVariable Long id){
         service.deleteUser(id);
         return ResponseEntity.noContent().build();
