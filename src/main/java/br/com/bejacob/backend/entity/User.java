@@ -77,4 +77,12 @@ public class User implements UserDetails {
     public String getUsername() {
         return this.email;
     }
+
+    public void softDelete() {
+        this.isActive = false;
+    }
+
+    public void updatePassword(String newPassword) {
+        this.password = newPassword;
+    }
 }
