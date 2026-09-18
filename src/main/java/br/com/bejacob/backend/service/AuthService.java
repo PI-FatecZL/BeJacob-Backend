@@ -76,7 +76,8 @@ public class AuthService {
             return new DataToken(
                     tokenJWT,
                     user.getId(),
-                    user.getEmail()
+                    user.getEmail(),
+                    user.getRole()
             );
         } catch (BadCredentialsException e) {
             throw new InvalidCredentialsException("E-mail ou senha inválidos");
