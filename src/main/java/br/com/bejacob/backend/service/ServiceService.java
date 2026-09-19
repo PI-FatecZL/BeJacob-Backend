@@ -2,6 +2,7 @@ package br.com.bejacob.backend.service;
 
 import br.com.bejacob.backend.dto.service.ServiceRequest;
 import br.com.bejacob.backend.entity.Service;
+import br.com.bejacob.backend.exception.service.ServiceNotFoundException;
 import br.com.bejacob.backend.repository.ServiceRepository;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public class ServiceService {
     // buscar serviço por ID
     public Service findById(Long id) {
         return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+                .orElseThrow(() -> new ServiceNotFoundException("Serviço não encontrado"));
     }
 
     // atualizar o serviço

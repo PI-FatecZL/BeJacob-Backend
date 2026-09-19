@@ -9,6 +9,10 @@ import br.com.bejacob.backend.dto.auth.RegisterUserResponse;
 import br.com.bejacob.backend.dto.auth.UpdatePasswordRequest;
 import br.com.bejacob.backend.entity.User;
 import br.com.bejacob.backend.entity.enums.UserRoles;
+import br.com.bejacob.backend.exception.auth.EmailAlreadyExistsException;
+import br.com.bejacob.backend.exception.auth.InvalidCredentialsException;
+import br.com.bejacob.backend.exception.auth.InvalidCurrentPasswordException;
+import br.com.bejacob.backend.exception.user.UserNotFoundException;
 import br.com.bejacob.backend.mapper.UserMapper;
 import br.com.bejacob.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -43,7 +47,7 @@ public class AuthService {
 
     public RegisterUserResponse register(RegisterUserRequest request) {
         if (repository.existsByEmail(request.email())) {
-            throw new RuntimeException("Email já cadastrado");
+            throw new EmailAlreadyExistsException("Email já cadastrado");
         }
 
         User user = userMapper.toEntity(request);
@@ -55,32 +59,40 @@ public class AuthService {
     }
 
     public DataToken login(LoginRequest data) {
-        UsernamePasswordAuthenticationToken token =
-                new UsernamePasswordAuthenticationToken(
-                        data.email(),
-                        data.password()
-                );
-        Authentication authentication = manager.authenticate(token);
-        User user = (User) authentication.getPrincipal();
+        try {
+            UsernamePasswordAuthenticationToken token =
+                    new UsernamePasswordAuthenticationToken(
+                            data.email(),
+                            data.password()
+                    );
+            Authentication authentication = manager.authenticate(token);
+            User user = (User) authentication.getPrincipal();
 
-        if (user == null) {
-            throw new BadCredentialsException("User não encontrado");
+            if (user == null) {
+                throw new UserNotFoundException("User não encontrado");
+            }
+
+            String tokenJWT = tokenService.generateToken(user);
+            return new DataToken(
+                    tokenJWT,
+                    user.getId(),
+                    user.getEmail(),
+                    user.getRole()
+            );
+        } catch (BadCredentialsException e) {
+            throw new InvalidCredentialsException("E-mail ou senha inválidos");
         }
-
-        String tokenJWT = tokenService.generateToken(user);
-        return new DataToken(
-                tokenJWT,
-                user.getId(),
-                user.getEmail()
-        );
     }
 
     @Transactional
     public MessageResponse updatePassword(UpdatePasswordRequest data, Long id) {
         User user = repository.findByIdAndIsActiveTrue(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-        if (!encoder.matches(data.oldPassword(), user.getPassword())) {
-            throw new RuntimeException("Senha incorreta");
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        if(!encoder.matches(data.oldPassword(), user.getPassword())) {
+            throw new InvalidCurrentPasswordException("Senha Antiga está Inválida");
+        }
+        if(encoder.matches(data.newPassword(), user.getPassword())) {
+            throw new InvalidCredentialsException("Nova senha não pode ser igual a senha atual");
         }
         String newPassword = encoder.encode(data.newPassword());
         user.updatePassword(newPassword);

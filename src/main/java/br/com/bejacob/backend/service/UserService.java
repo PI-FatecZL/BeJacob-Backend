@@ -3,6 +3,7 @@ package br.com.bejacob.backend.service;
 import br.com.bejacob.backend.dto.user.UpdateProfileRequest;
 import br.com.bejacob.backend.dto.user.UserResponse;
 import br.com.bejacob.backend.entity.User;
+import br.com.bejacob.backend.exception.user.UserNotFoundException;
 import br.com.bejacob.backend.mapper.UserMapper;
 import br.com.bejacob.backend.repository.UserRepository;
 import org.springframework.data.domain.Page;
@@ -32,14 +33,14 @@ public class UserService {
 
     public UserResponse detailsUser(Long id) {
         User user = repository.findByIdAndIsActiveTrue(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
         return mapper.toResponse(user);
     }
 
     @Transactional
     public UserResponse updateUser(Long id, UpdateProfileRequest request) {
         User user = repository.findByIdAndIsActiveTrue(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
         mapper.updateEntityFromDto(request, user);
         return mapper.toResponse(user);
     }
@@ -47,7 +48,7 @@ public class UserService {
     @Transactional
     public void deleteUser(Long id) {
         User user = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
         user.softDelete();
         repository.save(user);
     }
