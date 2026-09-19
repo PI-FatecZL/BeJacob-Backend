@@ -16,28 +16,32 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
+    private ResponseEntity<ApiErrorMessage> buildResponseHandler(HttpStatus status, String message) {
+        return ResponseEntity.status(status).body(new ApiErrorMessage(status, message));
+    }
+
     @ExceptionHandler(EmailAlreadyExistsException.class)
-    private ResponseEntity<String> EmailAlreadyExistsHandler(EmailAlreadyExistsException exception){
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getMessage());
+    private ResponseEntity<ApiErrorMessage> EmailAlreadyExistsHandler(EmailAlreadyExistsException exception){
+        return buildResponseHandler(HttpStatus.CONFLICT, exception.getMessage());
     }
 
     @ExceptionHandler(ServiceNotFoundException.class)
-    private ResponseEntity<String> ServiceNotFoundHandler(ServiceNotFoundException exception){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+    private ResponseEntity<ApiErrorMessage> ServiceNotFoundHandler(ServiceNotFoundException exception){
+        return buildResponseHandler(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    private ResponseEntity<String> UserNotFoundHandler(UserNotFoundException exception){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+    private ResponseEntity<ApiErrorMessage> UserNotFoundHandler(UserNotFoundException exception){
+        return buildResponseHandler(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
     @ExceptionHandler(InvalidCurrentPasswordException.class)
-    private ResponseEntity<String> InvalidCurrentPasswordHandler(InvalidCurrentPasswordException  exception){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+    private ResponseEntity<ApiErrorMessage> InvalidCurrentPasswordHandler(InvalidCurrentPasswordException  exception){
+        return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<String> InvalidCredentialsHandler(InvalidCredentialsException exception) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getMessage());
+    public ResponseEntity<ApiErrorMessage> InvalidCredentialsHandler(InvalidCredentialsException exception) {
+        return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 }

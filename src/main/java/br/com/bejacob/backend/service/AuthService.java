@@ -88,8 +88,11 @@ public class AuthService {
     public MessageResponse updatePassword(UpdatePasswordRequest data, Long id) {
         User user = repository.findByIdAndIsActiveTrue(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-        if (!encoder.matches(data.oldPassword(), user.getPassword())) {
-            throw new InvalidCurrentPasswordException("Senha incorreta");
+        if(!encoder.matches(data.oldPassword(), user.getPassword())) {
+            throw new InvalidCurrentPasswordException("Senha Antiga está Inválida");
+        }
+        if(encoder.matches(data.newPassword(), user.getPassword())) {
+            throw new InvalidCredentialsException("Nova senha não pode ser igual a senha atual");
         }
         String newPassword = encoder.encode(data.newPassword());
         user.updatePassword(newPassword);
