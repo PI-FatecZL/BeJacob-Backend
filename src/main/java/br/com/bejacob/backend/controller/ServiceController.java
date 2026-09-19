@@ -3,6 +3,7 @@ package br.com.bejacob.backend.controller;
 import br.com.bejacob.backend.dto.service.ServiceRequest;
 import br.com.bejacob.backend.dto.service.ServiceResponse;
 import br.com.bejacob.backend.service.ServiceService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,7 +21,6 @@ public class ServiceController {
         this.service = service;
     }
 
-    // Criar o serviço(apenas admin)
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceResponse> create(
@@ -31,8 +31,8 @@ public class ServiceController {
         );
     }
 
-    // listar os serviços
     @GetMapping
+    @SecurityRequirements
     public ResponseEntity<List<ServiceResponse>> findAll() {
         return ResponseEntity.ok(
                 service.findAll()
@@ -42,8 +42,8 @@ public class ServiceController {
         );
     }
 
-    // buscar serviço por ID
     @GetMapping("/{id}")
+    @SecurityRequirements
     public ResponseEntity<ServiceResponse> findById(
             @PathVariable Long id) {
         return ResponseEntity.ok(
@@ -51,8 +51,8 @@ public class ServiceController {
         );
     }
 
-    // atualizar parcialmente o serviço
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceResponse> update(
             @PathVariable Long id,
             @RequestBody @Valid ServiceRequest request) {
@@ -61,8 +61,8 @@ public class ServiceController {
         );
     }
 
-    // deletar o serviço
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(
             @PathVariable Long id) {
         service.delete(id);
