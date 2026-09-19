@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod; 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -24,6 +25,7 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfigurations {
+
     @Autowired
     private SecurityFilter securityFilter;
 
@@ -37,19 +39,11 @@ public class SecurityConfigurations {
                     CorsConfiguration configuration = new CorsConfiguration();
                     configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins.split(",")));
                     configuration.setAllowedMethods(List.of(
-                            "GET",
-                            "POST",
-                            "PUT",
-                            "PATCH",
-                            "DELETE",
-                            "OPTIONS",
-                            "HEAD"
+                            "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"
                     ));
                     configuration.setAllowedHeaders(List.of(
-                            "Authorization",
-                            "Content-Type",
-                            "Accept",
-                            "Origin"));
+                            "Authorization", "Content-Type", "Accept", "Origin"
+                    ));
                     configuration.setAllowCredentials(true);
                     return configuration;
                 }))
@@ -64,6 +58,8 @@ public class SecurityConfigurations {
                                 "/swagger-ui.html",
                                 "/swagger-ui/**").permitAll()
 
+                       
+                        .requestMatchers(HttpMethod.GET, "/services", "/services/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
