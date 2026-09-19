@@ -51,7 +51,7 @@ public class TokenService {
             }
             throw new RuntimeException("Token inválido: Issuer incorreto!");
         } catch (JwtException e) {
-            throw new RuntimeException("Token inválido ou expirado!", e);
+                throw new RuntimeException("Token inválido ou expirado!", e);
         }
     }
 
