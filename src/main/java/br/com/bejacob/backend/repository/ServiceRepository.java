@@ -1,12 +1,12 @@
 package br.com.bejacob.backend.repository;
 
-import br.com.bejacob.backend.entity.Service;
+import br.com.bejacob.backend.entity.Services;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ServiceRepository extends JpaRepository<Service, Long> {
+public interface ServiceRepository extends JpaRepository<Services, Long> {
 
-    Service save(Service service);
+    Services save(Services service);
 
 }

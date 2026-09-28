@@ -1,5 +1,8 @@
 package br.com.bejacob.backend.exception;
 
+import br.com.bejacob.backend.exception.appointment.AppointmentConflictException;
+import br.com.bejacob.backend.exception.appointment.AppointmentUnauthorizedException;
+import br.com.bejacob.backend.exception.appointment.PastDateAppointmentException;
 import br.com.bejacob.backend.exception.auth.EmailAlreadyExistsException;
 import br.com.bejacob.backend.exception.auth.InvalidCredentialsException;
 import br.com.bejacob.backend.exception.auth.InvalidCurrentPasswordException;
@@ -7,8 +10,6 @@ import br.com.bejacob.backend.exception.service.ServiceNotFoundException;
 import br.com.bejacob.backend.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -36,12 +37,28 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(InvalidCurrentPasswordException.class)
-    private ResponseEntity<ApiErrorMessage> InvalidCurrentPasswordHandler(InvalidCurrentPasswordException  exception){
+    private ResponseEntity<ApiErrorMessage> InvalidCurrentPasswordHandler(InvalidCurrentPasswordException exception){
         return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ApiErrorMessage> InvalidCredentialsHandler(InvalidCredentialsException exception) {
         return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+
+    @ExceptionHandler(AppointmentConflictException.class)
+    public ResponseEntity<ApiErrorMessage> AppointmentConflictHandler(AppointmentConflictException exception) {
+        return buildResponseHandler(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
+    @ExceptionHandler(PastDateAppointmentException.class)
+    public ResponseEntity<ApiErrorMessage> PastDateAppointmentHandler(PastDateAppointmentException exception) {
+        return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @ExceptionHandler(AppointmentUnauthorizedException.class)
+    public ResponseEntity<ApiErrorMessage> AppointmentUnauthorizedHandler(AppointmentUnauthorizedException exception) {
+        return buildResponseHandler(HttpStatus.FORBIDDEN, exception.getMessage());
     }
 }

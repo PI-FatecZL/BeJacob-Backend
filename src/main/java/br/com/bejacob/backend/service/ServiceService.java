@@ -1,65 +1,66 @@
 package br.com.bejacob.backend.service;
 
 import br.com.bejacob.backend.dto.service.ServiceRequest;
-import br.com.bejacob.backend.entity.Service;
+import br.com.bejacob.backend.dto.service.ServiceResponse;
+import br.com.bejacob.backend.entity.Services;
 import br.com.bejacob.backend.exception.service.ServiceNotFoundException;
+import br.com.bejacob.backend.mapper.ServiceMapper;
 import br.com.bejacob.backend.repository.ServiceRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@org.springframework.stereotype.Service
+@Service
 public class ServiceService {
 
     private final ServiceRepository repository;
+    private final ServiceMapper mapper;
 
-    public ServiceService(ServiceRepository repository) {
+    public ServiceService(ServiceRepository repository, ServiceMapper mapper) {
         this.repository = repository;
+        this.mapper = mapper;
     }
 
-    // criar o serviço
-    public Service create(ServiceRequest request) {
-
-        Service service = new Service();
-
-        service.setName(request.name());
-        service.setDescription(request.description());
-        service.setDurationMinutes(request.durationMinutes());
-        service.setPrice(request.price());
-        service.setActive(request.active());
-
-        return repository.save(service);
+    @Transactional
+    public ServiceResponse create(ServiceRequest request) {
+        Services service = mapper.toEntity(request);
+        Services saved = repository.save(service);
+        return mapper.toResponse(saved);
     }
 
-    // listar os serviços
-    public List<Service> findAll() {
-        return repository.findAll();
+    // listar serviços
+    @Transactional(readOnly = true)
+    public List<ServiceResponse> findAll() {
+        return repository.findAll()
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
-    // buscar serviço por ID
-    public Service findById(Long id) {
-        return repository.findById(id)
+    //listar por id
+    @Transactional(readOnly = true)
+    public ServiceResponse findById(Long id) {
+        Services service = repository.findById(id)
                 .orElseThrow(() -> new ServiceNotFoundException("Serviço não encontrado"));
+        return mapper.toResponse(service);
     }
 
-    // atualizar o serviço
-    public Service update(Long id, ServiceRequest request) {
-
-        Service existingService = findById(id);
-
-        existingService.setName(request.name());
-        existingService.setDescription(request.description());
-        existingService.setDurationMinutes(request.durationMinutes());
-        existingService.setPrice(request.price());
-        existingService.setActive(request.active());
-
-        return repository.save(existingService);
+    // atualizar por serviços
+    @Transactional
+    public ServiceResponse update(Long id, ServiceRequest request) {
+        Services service = repository.findById(id)
+                .orElseThrow(() -> new ServiceNotFoundException("Serviço não encontrado"));
+        mapper.updateEntityFromDto(request, service);
+        Services saved = repository.save(service);
+        return mapper.toResponse(saved);
     }
 
-    // deletar o serviço
+    //deletar serviços
+    @Transactional
     public void delete(Long id) {
-
-        Service service = findById(id);
-
+        Services service = repository.findById(id)
+                .orElseThrow(() -> new ServiceNotFoundException("Serviço não encontrado"));
         repository.delete(service);
     }
 }
