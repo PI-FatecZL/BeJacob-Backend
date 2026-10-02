@@ -2,6 +2,7 @@ package br.com.bejacob.backend.exception;
 
 import br.com.bejacob.backend.exception.appointment.AppointmentConflictException;
 import br.com.bejacob.backend.exception.appointment.AppointmentUnauthorizedException;
+import br.com.bejacob.backend.exception.appointment.InvalidAppointmentTimeException;
 import br.com.bejacob.backend.exception.appointment.PastDateAppointmentException;
 import br.com.bejacob.backend.exception.auth.EmailAlreadyExistsException;
 import br.com.bejacob.backend.exception.auth.InvalidCredentialsException;
@@ -46,7 +47,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
-
     @ExceptionHandler(AppointmentConflictException.class)
     public ResponseEntity<ApiErrorMessage> AppointmentConflictHandler(AppointmentConflictException exception) {
         return buildResponseHandler(HttpStatus.CONFLICT, exception.getMessage());
@@ -60,5 +60,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AppointmentUnauthorizedException.class)
     public ResponseEntity<ApiErrorMessage> AppointmentUnauthorizedHandler(AppointmentUnauthorizedException exception) {
         return buildResponseHandler(HttpStatus.FORBIDDEN, exception.getMessage());
+    }
+
+    
+    @ExceptionHandler(InvalidAppointmentTimeException.class)
+    public ResponseEntity<ApiErrorMessage> InvalidAppointmentTimeHandler(InvalidAppointmentTimeException exception) {
+        return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 }

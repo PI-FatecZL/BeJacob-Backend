@@ -10,6 +10,7 @@ import br.com.bejacob.backend.entity.User;
 import br.com.bejacob.backend.entity.enums.AppointmentStatus;
 import br.com.bejacob.backend.exception.appointment.AppointmentConflictException;
 import br.com.bejacob.backend.exception.appointment.AppointmentUnauthorizedException;
+import br.com.bejacob.backend.exception.appointment.InvalidAppointmentTimeException;
 import br.com.bejacob.backend.exception.appointment.PastDateAppointmentException;
 import br.com.bejacob.backend.exception.service.ServiceNotFoundException;
 import br.com.bejacob.backend.exception.user.UserNotFoundException;
@@ -55,6 +56,7 @@ public class AppointmentService {
 
         LocalDateTime startsAt = request.startsAt();
         validatePastDate(startsAt);
+        validateTimeSlot(startsAt); 
 
         LocalDateTime endsAt = startsAt.plusMinutes(serviceEntity.getDurationMinutes());
 
@@ -74,6 +76,7 @@ public class AppointmentService {
 
         LocalDateTime startsAt = request.startsAt();
         validatePastDate(startsAt);
+        validateTimeSlot(startsAt); 
 
         LocalDateTime endsAt = startsAt.plusMinutes(serviceEntity.getDurationMinutes());
 
@@ -96,9 +99,10 @@ public class AppointmentService {
         }
 
         LocalDateTime newStartsAt = request.startsAt() != null ? request.startsAt() : appointment.getStartsAt();
-        
+
         if (request.startsAt() != null) {
             validatePastDate(newStartsAt);
+            validateTimeSlot(newStartsAt); 
         }
 
         LocalDateTime newEndsAt = appointment.getEndsAt();
@@ -183,7 +187,6 @@ public class AppointmentService {
                     .filter(a -> a.getStatus() != AppointmentStatus.CANCELED)
                     .anyMatch(a -> checkStart.isBefore(a.getEndsAt()) && slotEnd.isAfter(a.getStartsAt()));
 
-        
             boolean isPastTime = currentSlot.isBefore(LocalDateTime.now());
 
             if (!hasConflict && !isPastTime) {
@@ -196,10 +199,31 @@ public class AppointmentService {
         return availableTimes;
     }
 
-  
+
+
     private void validatePastDate(LocalDateTime startsAt) {
         if (startsAt.isBefore(LocalDateTime.now())) {
             throw new PastDateAppointmentException("Não é permitido realizar ou atualizar agendamentos para datas ou horários passados.");
+        }
+    }
+
+
+    private void validateTimeSlot(LocalDateTime startsAt) {
+        LocalTime time = startsAt.toLocalTime();
+        
+      
+        if (time.isBefore(LocalTime.of(8, 0)) || time.isAfter(LocalTime.of(20,00))) {
+            throw new InvalidAppointmentTimeException("O horário de agendamento deve ser entre 08:00 e 20:00.");
+        }
+
+       
+        if (time.getMinute() != 0 && time.getMinute() != 30) {
+            throw new InvalidAppointmentTimeException("Horário inválido. Os agendamentos devem ser em intervalos de 30 minutos (ex: 08:00, 08:30).");
+        }
+        
+        
+        if (time.getSecond() != 0 || time.getNano() != 0) {
+            throw new InvalidAppointmentTimeException("Horário inválido. Não envie segundos ou milissegundos.");
         }
     }
 
