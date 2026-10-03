@@ -59,6 +59,9 @@ public class AppointmentService {
         validateTimeSlot(startsAt); 
 
         LocalDateTime endsAt = startsAt.plusMinutes(serviceEntity.getDurationMinutes());
+        
+    
+        validateClosingTime(startsAt, endsAt);
 
         validateNoConflict(startsAt, endsAt);
 
@@ -79,6 +82,9 @@ public class AppointmentService {
         validateTimeSlot(startsAt); 
 
         LocalDateTime endsAt = startsAt.plusMinutes(serviceEntity.getDurationMinutes());
+        
+      
+        validateClosingTime(startsAt, endsAt);
 
         validateNoConflict(startsAt, endsAt);
 
@@ -109,6 +115,10 @@ public class AppointmentService {
 
         if (request.startsAt() != null || request.serviceId() != null) {
             newEndsAt = newStartsAt.plusMinutes(updatedService.getDurationMinutes());
+            
+           
+            validateClosingTime(newStartsAt, newEndsAt);
+            
             validateNoConflictForUpdate(appointment.getId(), newStartsAt, newEndsAt);
         }
 
@@ -199,31 +209,36 @@ public class AppointmentService {
         return availableTimes;
     }
 
-
-
     private void validatePastDate(LocalDateTime startsAt) {
         if (startsAt.isBefore(LocalDateTime.now())) {
             throw new PastDateAppointmentException("Não é permitido realizar ou atualizar agendamentos para datas ou horários passados.");
         }
     }
 
-
     private void validateTimeSlot(LocalDateTime startsAt) {
         LocalTime time = startsAt.toLocalTime();
         
-      
         if (time.isBefore(LocalTime.of(8, 0)) || time.isAfter(LocalTime.of(20,00))) {
             throw new InvalidAppointmentTimeException("O horário de agendamento deve ser entre 08:00 e 20:00.");
         }
 
-       
         if (time.getMinute() != 0 && time.getMinute() != 30) {
             throw new InvalidAppointmentTimeException("Horário inválido. Os agendamentos devem ser em intervalos de 30 minutos (ex: 08:00, 08:30).");
         }
         
-        
         if (time.getSecond() != 0 || time.getNano() != 0) {
             throw new InvalidAppointmentTimeException("Horário inválido. Não envie segundos ou milissegundos.");
+        }
+    }
+
+   
+    private void validateClosingTime(LocalDateTime startsAt, LocalDateTime endsAt) {
+        LocalDateTime closingTime = startsAt.toLocalDate().atTime(20, 0);
+        if (endsAt.isAfter(closingTime)) {
+            throw new InvalidAppointmentTimeException(
+                "O serviço escolhido terminaria às " + endsAt.toLocalTime() + 
+                ". O horário limite de atendimento é até as 20:00. Por favor, escolha um horário mais cedo."
+            );
         }
     }
 
