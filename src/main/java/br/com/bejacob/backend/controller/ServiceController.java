@@ -5,6 +5,7 @@ import br.com.bejacob.backend.dto.service.ServiceResponse;
 import br.com.bejacob.backend.service.ServiceService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -25,30 +26,20 @@ public class ServiceController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceResponse> create(
             @RequestBody @Valid ServiceRequest request) {
-
-        return ResponseEntity.ok(
-                new ServiceResponse(service.create(request))
-        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
     }
 
     @GetMapping
     @SecurityRequirements
     public ResponseEntity<List<ServiceResponse>> findAll() {
-        return ResponseEntity.ok(
-                service.findAll()
-                        .stream()
-                        .map(ServiceResponse::new)
-                        .toList()
-        );
+        return ResponseEntity.ok(service.findAll());
     }
 
     @GetMapping("/{id}")
     @SecurityRequirements
     public ResponseEntity<ServiceResponse> findById(
             @PathVariable Long id) {
-        return ResponseEntity.ok(
-                new ServiceResponse(service.findById(id))
-        );
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @PatchMapping("/{id}")
@@ -56,9 +47,7 @@ public class ServiceController {
     public ResponseEntity<ServiceResponse> update(
             @PathVariable Long id,
             @RequestBody @Valid ServiceRequest request) {
-        return ResponseEntity.ok(
-                new ServiceResponse(service.update(id, request))
-        );
+        return ResponseEntity.ok(service.update(id, request));
     }
 
     @DeleteMapping("/{id}")

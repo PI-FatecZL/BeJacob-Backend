@@ -20,10 +20,6 @@ public record ServiceRequest(
 
         @NotNull
         @DecimalMin(value = "0.0")
-        BigDecimal price,
-
-        @NotNull
-        Boolean active
-
+        BigDecimal price
 ) {
 }
