@@ -33,7 +33,8 @@ public record AppointmentResponse(
                         appointment.getUser().getId(),
                         appointment.getUser().getName(),
                         appointment.getUser().getEmail(),
-                        appointment.getUser().getPhone()
+                        appointment.getUser().getPhone(),
+                        appointment.getUser().isActive()
                 ),
                 new ServiceResponse(appointment.getService()),
                 appointment.getStartsAt(),
