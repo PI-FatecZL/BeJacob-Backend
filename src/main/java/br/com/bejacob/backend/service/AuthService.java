@@ -12,6 +12,7 @@ import br.com.bejacob.backend.entity.enums.UserRoles;
 import br.com.bejacob.backend.exception.auth.EmailAlreadyExistsException;
 import br.com.bejacob.backend.exception.auth.InvalidCredentialsException;
 import br.com.bejacob.backend.exception.auth.InvalidCurrentPasswordException;
+import br.com.bejacob.backend.exception.auth.PhoneAlreadyExistsException;
 import br.com.bejacob.backend.exception.user.UserNotFoundException;
 import br.com.bejacob.backend.mapper.UserMapper;
 import br.com.bejacob.backend.repository.UserRepository;
@@ -48,6 +49,10 @@ public class AuthService {
     public RegisterUserResponse register(RegisterUserRequest request) {
         if (repository.existsByEmail(request.email())) {
             throw new EmailAlreadyExistsException("Email já cadastrado");
+        }
+
+        if (repository.existsByPhone(request.phone())) {
+            throw new PhoneAlreadyExistsException("Telefone já cadastrado");
         }
 
         User user = userMapper.toEntity(request);
