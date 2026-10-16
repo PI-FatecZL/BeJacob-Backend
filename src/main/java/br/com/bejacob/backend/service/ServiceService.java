@@ -3,6 +3,8 @@ package br.com.bejacob.backend.service;
 import br.com.bejacob.backend.dto.service.ServiceRequest;
 import br.com.bejacob.backend.dto.service.ServiceResponse;
 import br.com.bejacob.backend.entity.Services;
+import br.com.bejacob.backend.exception.service.ServiceAlreadyExistsException;
+import br.com.bejacob.backend.exception.service.ServiceHasAppointmentsException;
 import br.com.bejacob.backend.exception.service.ServiceNotFoundException;
 import br.com.bejacob.backend.mapper.ServiceMapper;
 import br.com.bejacob.backend.repository.AppointmentRepository;
@@ -27,6 +29,10 @@ public class ServiceService {
 
     @Transactional
     public ServiceResponse create(ServiceRequest request) {
+        if (repository.existsByNameIgnoreCase(request.name())) {
+            throw new ServiceAlreadyExistsException("Já existe um serviço cadastrado com este nome.");
+        }
+
         Services service = mapper.toEntity(request);
         Services saved = repository.save(service);
         return mapper.toResponse(saved);
@@ -41,7 +47,7 @@ public class ServiceService {
                 .toList();
     }
 
-    //listar por id
+    // listar por id
     @Transactional(readOnly = true)
     public ServiceResponse findById(Long id) {
         Services service = repository.findById(id)
@@ -54,19 +60,25 @@ public class ServiceService {
     public ServiceResponse update(Long id, ServiceRequest request) {
         Services service = repository.findById(id)
                 .orElseThrow(() -> new ServiceNotFoundException("Serviço não encontrado"));
+
+        if (!service.getName().equalsIgnoreCase(request.name()) && repository.existsByNameIgnoreCase(request.name())) {
+            throw new ServiceAlreadyExistsException("Já existe um serviço cadastrado com este nome.");
+        }
+
         mapper.updateEntityFromDto(request, service);
         Services saved = repository.save(service);
         return mapper.toResponse(saved);
     }
 
-    //deletar serviços
+    // deletar serviços com validação de agendamento
     @Transactional
     public void delete(Long id) {
         Services service = repository.findById(id)
                 .orElseThrow(() -> new ServiceNotFoundException("Serviço não encontrado"));
+
         boolean hasAppointments = appointmentRepository.existsByServiceId(id);
         if (hasAppointments) {
-            throw new IllegalStateException("Não é possível excluir este serviço pois ele está vinculado a um ou mais agendamentos.");
+            throw new ServiceHasAppointmentsException("Não é possível excluir este serviço pois ele está vinculado a um ou mais agendamentos.");
         }
 
         repository.delete(service);
