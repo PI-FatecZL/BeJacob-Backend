@@ -7,13 +7,23 @@ import br.com.bejacob.backend.exception.appointment.PastDateAppointmentException
 import br.com.bejacob.backend.exception.auth.EmailAlreadyExistsException;
 import br.com.bejacob.backend.exception.auth.InvalidCredentialsException;
 import br.com.bejacob.backend.exception.auth.InvalidCurrentPasswordException;
+import br.com.bejacob.backend.exception.auth.PhoneAlreadyExistsException;
 import br.com.bejacob.backend.exception.service.ServiceNotFoundException;
 import br.com.bejacob.backend.exception.user.UserNotFoundException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -24,6 +34,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
     private ResponseEntity<ApiErrorMessage> EmailAlreadyExistsHandler(EmailAlreadyExistsException exception){
+        return buildResponseHandler(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
+    @ExceptionHandler(PhoneAlreadyExistsException.class)
+    private ResponseEntity<ApiErrorMessage> PhoneAlreadyExistsException(PhoneAlreadyExistsException exception){
         return buildResponseHandler(HttpStatus.CONFLICT, exception.getMessage());
     }
 
@@ -66,5 +81,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidAppointmentTimeException.class)
     public ResponseEntity<ApiErrorMessage> InvalidAppointmentTimeHandler(InvalidAppointmentTimeException exception) {
         return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request){
+
+        String errorMessage = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getDefaultMessage())
+                .collect(Collectors.joining(" | "));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiErrorMessage(HttpStatus.BAD_REQUEST, errorMessage));
     }
 }
