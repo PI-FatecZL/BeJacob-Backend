@@ -9,8 +9,8 @@ public record ServiceResponse(
         String name,
         String description,
         Integer durationMinutes,
-        BigDecimal price
-
+        BigDecimal price,
+        Boolean active
 ) {
 
     public ServiceResponse(Services service) {
@@ -19,7 +19,8 @@ public record ServiceResponse(
                 service.getName(),
                 service.getDescription(),
                 service.getDurationMinutes(),
-                service.getPrice()
+                service.getPrice(),
+                service.getActive()
         );
     }
 }
