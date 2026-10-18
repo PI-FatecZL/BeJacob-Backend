@@ -8,6 +8,8 @@ import br.com.bejacob.backend.exception.auth.EmailAlreadyExistsException;
 import br.com.bejacob.backend.exception.auth.InvalidCredentialsException;
 import br.com.bejacob.backend.exception.auth.InvalidCurrentPasswordException;
 import br.com.bejacob.backend.exception.auth.PhoneAlreadyExistsException;
+import br.com.bejacob.backend.exception.service.ServiceAlreadyExistsException;
+import br.com.bejacob.backend.exception.service.ServiceHasAppointmentsException;
 import br.com.bejacob.backend.exception.service.ServiceNotFoundException;
 import br.com.bejacob.backend.exception.user.UserHasAppointmentsException;
 import br.com.bejacob.backend.exception.user.UserNotFoundException;
@@ -83,10 +85,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return buildResponseHandler(HttpStatus.FORBIDDEN, exception.getMessage());
     }
 
-    
     @ExceptionHandler(InvalidAppointmentTimeException.class)
     public ResponseEntity<ApiErrorMessage> InvalidAppointmentTimeHandler(InvalidAppointmentTimeException exception) {
         return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @ExceptionHandler(ServiceAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorMessage> ServiceAlreadyExistsHandler(ServiceAlreadyExistsException exception) {
+        return buildResponseHandler(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
+    @ExceptionHandler(ServiceHasAppointmentsException.class)
+    public ResponseEntity<ApiErrorMessage> ServiceHasAppointmentsHandler(ServiceHasAppointmentsException exception) {
+        return buildResponseHandler(HttpStatus.CONFLICT, exception.getMessage());
     }
 
     @Override

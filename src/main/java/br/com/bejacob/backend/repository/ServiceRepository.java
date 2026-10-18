@@ -9,4 +9,5 @@ public interface ServiceRepository extends JpaRepository<Services, Long> {
 
     Services save(Services service);
 
+    boolean existsByNameIgnoreCase(String name);
 }
