@@ -35,4 +35,18 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("startsAt") LocalDateTime startsAt,
             @Param("endsAt") LocalDateTime endsAt
     );
+
+    boolean existsByServiceId(Long serviceId);
+
+    @Query("""
+        SELECT COUNT(a) > 0
+        FROM Appointment a
+        WHERE a.user.id = :userId
+        AND a.startsAt >= :currentDateTime
+        AND a.status = br.com.bejacob.backend.entity.enums.AppointmentStatus.SCHEDULED
+    """)
+    boolean existsFutureScheduledAppointmentsByUserId(
+            @Param("userId") Long userId,
+            @Param("currentDateTime") LocalDateTime currentDateTime
+    );
 }

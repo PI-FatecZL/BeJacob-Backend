@@ -9,6 +9,7 @@ import br.com.bejacob.backend.exception.auth.InvalidCredentialsException;
 import br.com.bejacob.backend.exception.auth.InvalidCurrentPasswordException;
 import br.com.bejacob.backend.exception.auth.PhoneAlreadyExistsException;
 import br.com.bejacob.backend.exception.service.ServiceNotFoundException;
+import br.com.bejacob.backend.exception.user.UserHasAppointmentsException;
 import br.com.bejacob.backend.exception.user.UserNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -50,6 +51,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     private ResponseEntity<ApiErrorMessage> UserNotFoundHandler(UserNotFoundException exception){
         return buildResponseHandler(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(UserHasAppointmentsException.class)
+    private ResponseEntity<ApiErrorMessage> UserHasAppointmentsHandler(UserHasAppointmentsException exception){
+        return buildResponseHandler(HttpStatus.CONFLICT, exception.getMessage());
     }
 
     @ExceptionHandler(InvalidCurrentPasswordException.class)
