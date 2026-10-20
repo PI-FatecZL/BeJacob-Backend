@@ -9,7 +9,10 @@ import br.com.bejacob.backend.exception.auth.InactiveUserException;
 import br.com.bejacob.backend.exception.auth.InvalidCredentialsException;
 import br.com.bejacob.backend.exception.auth.InvalidCurrentPasswordException;
 import br.com.bejacob.backend.exception.auth.PhoneAlreadyExistsException;
+import br.com.bejacob.backend.exception.service.ServiceAlreadyExistsException;
+import br.com.bejacob.backend.exception.service.ServiceHasAppointmentsException;
 import br.com.bejacob.backend.exception.service.ServiceNotFoundException;
+import br.com.bejacob.backend.exception.user.UserHasAppointmentsException;
 import br.com.bejacob.backend.exception.user.UserNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -53,6 +56,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return buildResponseHandler(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
+    @ExceptionHandler(UserHasAppointmentsException.class)
+    private ResponseEntity<ApiErrorMessage> UserHasAppointmentsHandler(UserHasAppointmentsException exception){
+        return buildResponseHandler(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
     @ExceptionHandler(InvalidCurrentPasswordException.class)
     private ResponseEntity<ApiErrorMessage> InvalidCurrentPasswordHandler(InvalidCurrentPasswordException exception){
         return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
@@ -83,10 +91,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return buildResponseHandler(HttpStatus.FORBIDDEN, exception.getMessage());
     }
 
-    
     @ExceptionHandler(InvalidAppointmentTimeException.class)
     public ResponseEntity<ApiErrorMessage> InvalidAppointmentTimeHandler(InvalidAppointmentTimeException exception) {
         return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @ExceptionHandler(ServiceAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorMessage> ServiceAlreadyExistsHandler(ServiceAlreadyExistsException exception) {
+        return buildResponseHandler(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
+    @ExceptionHandler(ServiceHasAppointmentsException.class)
+    public ResponseEntity<ApiErrorMessage> ServiceHasAppointmentsHandler(ServiceHasAppointmentsException exception) {
+        return buildResponseHandler(HttpStatus.CONFLICT, exception.getMessage());
     }
 
     @Override

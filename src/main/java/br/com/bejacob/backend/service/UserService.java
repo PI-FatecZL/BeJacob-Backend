@@ -5,26 +5,32 @@ import br.com.bejacob.backend.dto.user.UserResponse;
 import br.com.bejacob.backend.entity.User;
 import br.com.bejacob.backend.exception.auth.EmailAlreadyExistsException;
 import br.com.bejacob.backend.exception.auth.PhoneAlreadyExistsException;
+import br.com.bejacob.backend.exception.user.UserHasAppointmentsException;
 import br.com.bejacob.backend.exception.user.UserNotFoundException;
 import br.com.bejacob.backend.mapper.UserMapper;
+import br.com.bejacob.backend.repository.AppointmentRepository;
 import br.com.bejacob.backend.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class UserService {
 
     private UserRepository repository;
+    private AppointmentRepository appointmentRepository;
     private UserMapper mapper;
 
     public UserService(
             UserRepository repository,
+            AppointmentRepository appointmentRepository,
             UserMapper mapper) {
         this.repository = repository;
+        this.appointmentRepository = appointmentRepository;
         this.mapper = mapper;
     }
 
@@ -57,6 +63,9 @@ public class UserService {
     public void deleteUser(Long id) {
         User user = repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        if (appointmentRepository.existsFutureScheduledAppointmentsByUserId(id, LocalDateTime.now())) {
+            throw new UserHasAppointmentsException("Não é possível inativar este cliente pois ele está vinculado a um agendamento futuro.");
+        }
         user.softDelete();
         repository.save(user);
     }
