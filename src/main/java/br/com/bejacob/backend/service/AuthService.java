@@ -6,10 +6,13 @@ import br.com.bejacob.backend.dto.MessageResponse;
 import br.com.bejacob.backend.dto.auth.LoginRequest;
 import br.com.bejacob.backend.dto.auth.RegisterUserRequest;
 import br.com.bejacob.backend.dto.auth.RegisterUserResponse;
+import br.com.bejacob.backend.dto.auth.UpdateMeRequest;
 import br.com.bejacob.backend.dto.auth.UpdatePasswordRequest;
+import br.com.bejacob.backend.dto.user.UserResponse;
 import br.com.bejacob.backend.entity.User;
 import br.com.bejacob.backend.entity.enums.UserRoles;
 import br.com.bejacob.backend.exception.auth.EmailAlreadyExistsException;
+import br.com.bejacob.backend.exception.auth.InactiveUserException;
 import br.com.bejacob.backend.exception.auth.InvalidCredentialsException;
 import br.com.bejacob.backend.exception.auth.InvalidCurrentPasswordException;
 import br.com.bejacob.backend.exception.auth.PhoneAlreadyExistsException;
@@ -77,6 +80,10 @@ public class AuthService {
                 throw new UserNotFoundException("User não encontrado");
             }
 
+            if (!user.isActive()) {
+                throw new InactiveUserException("Usuário inativo, não é possível realizar o login");
+            }
+
             String tokenJWT = tokenService.generateToken(user);
             return new DataToken(
                     tokenJWT,
@@ -103,5 +110,26 @@ public class AuthService {
         user.updatePassword(newPassword);
         repository.save(user);
         return new MessageResponse("Nova Senha atualizada");
+    }
+
+    public UserResponse getMe(Long id) {
+        User user = repository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        return userMapper.toResponse(user);
+    }
+
+    @Transactional
+    public UserResponse updateMe(UpdateMeRequest data, Long id) {
+        User user = repository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        if (data.email() != null && repository.existsByEmailAndIdNot(data.email(), id)) {
+            throw new EmailAlreadyExistsException("Email já cadastrado");
+        }
+        if (data.phone() != null && repository.existsByPhoneAndIdNot(data.phone(), id)) {
+            throw new PhoneAlreadyExistsException("Telefone já cadastrado");
+        }
+        userMapper.updateEntityFromDto(data, user);
+        User saved = repository.save(user);
+        return userMapper.toResponse(saved);
     }
 }

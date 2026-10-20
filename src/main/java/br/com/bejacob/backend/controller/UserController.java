@@ -41,6 +41,7 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> update(
             @PathVariable Long id,
             @RequestBody @Valid UpdateProfileRequest data){

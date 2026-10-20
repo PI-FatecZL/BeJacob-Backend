@@ -3,6 +3,8 @@ package br.com.bejacob.backend.service;
 import br.com.bejacob.backend.dto.user.UpdateProfileRequest;
 import br.com.bejacob.backend.dto.user.UserResponse;
 import br.com.bejacob.backend.entity.User;
+import br.com.bejacob.backend.exception.auth.EmailAlreadyExistsException;
+import br.com.bejacob.backend.exception.auth.PhoneAlreadyExistsException;
 import br.com.bejacob.backend.exception.user.UserHasAppointmentsException;
 import br.com.bejacob.backend.exception.user.UserNotFoundException;
 import br.com.bejacob.backend.mapper.UserMapper;
@@ -45,8 +47,14 @@ public class UserService {
 
     @Transactional
     public UserResponse updateUser(Long id, UpdateProfileRequest request) {
-        User user = repository.findByIdAndIsActiveTrue(id)
+        User user = repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        if (request.email() != null && repository.existsByEmailAndIdNot(request.email(), id)) {
+            throw new EmailAlreadyExistsException("Email já cadastrado");
+        }
+        if (request.phone() != null && repository.existsByPhoneAndIdNot(request.phone(), id)) {
+            throw new PhoneAlreadyExistsException("Telefone já cadastrado");
+        }
         mapper.updateEntityFromDto(request, user);
         return mapper.toResponse(user);
     }
