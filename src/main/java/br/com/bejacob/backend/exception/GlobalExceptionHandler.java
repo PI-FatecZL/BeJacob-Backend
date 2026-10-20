@@ -5,6 +5,7 @@ import br.com.bejacob.backend.exception.appointment.AppointmentUnauthorizedExcep
 import br.com.bejacob.backend.exception.appointment.InvalidAppointmentTimeException;
 import br.com.bejacob.backend.exception.appointment.PastDateAppointmentException;
 import br.com.bejacob.backend.exception.auth.EmailAlreadyExistsException;
+import br.com.bejacob.backend.exception.auth.InactiveUserException;
 import br.com.bejacob.backend.exception.auth.InvalidCredentialsException;
 import br.com.bejacob.backend.exception.auth.InvalidCurrentPasswordException;
 import br.com.bejacob.backend.exception.auth.PhoneAlreadyExistsException;
@@ -60,6 +61,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ApiErrorMessage> InvalidCredentialsHandler(InvalidCredentialsException exception) {
         return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @ExceptionHandler(InactiveUserException.class)
+    public ResponseEntity<ApiErrorMessage> InactiveUserHandler(InactiveUserException exception) {
+        return buildResponseHandler(HttpStatus.FORBIDDEN, exception.getMessage());
     }
 
     @ExceptionHandler(AppointmentConflictException.class)

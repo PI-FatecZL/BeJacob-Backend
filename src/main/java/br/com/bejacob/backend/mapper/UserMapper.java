@@ -2,6 +2,7 @@ package br.com.bejacob.backend.mapper;
 
 import br.com.bejacob.backend.dto.auth.RegisterUserRequest;
 import br.com.bejacob.backend.dto.auth.RegisterUserResponse;
+import br.com.bejacob.backend.dto.auth.UpdateMeRequest;
 import br.com.bejacob.backend.dto.user.UpdateProfileRequest;
 import br.com.bejacob.backend.dto.user.UserResponse;
 import br.com.bejacob.backend.entity.User;
@@ -43,6 +44,13 @@ public class UserMapper {
     }
 
     public void updateEntityFromDto(UpdateProfileRequest request, User user) {
+        if (request.name() != null) user.setName(request.name());
+        if (request.email() != null) user.setEmail(request.email());
+        if (request.phone() != null) user.setPhone(request.phone());
+        if (request.isActive() != null) user.setActive(request.isActive());
+    }
+
+    public void updateEntityFromDto(UpdateMeRequest request, User user) {
         if (request.name() != null) user.setName(request.name());
         if (request.email() != null) user.setEmail(request.email());
         if (request.phone() != null) user.setPhone(request.phone());

@@ -5,7 +5,9 @@ import br.com.bejacob.backend.dto.MessageResponse;
 import br.com.bejacob.backend.dto.auth.LoginRequest;
 import br.com.bejacob.backend.dto.auth.RegisterUserRequest;
 import br.com.bejacob.backend.dto.auth.RegisterUserResponse;
+import br.com.bejacob.backend.dto.auth.UpdateMeRequest;
 import br.com.bejacob.backend.dto.auth.UpdatePasswordRequest;
+import br.com.bejacob.backend.dto.user.UserResponse;
 import br.com.bejacob.backend.entity.User;
 import br.com.bejacob.backend.service.AuthService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
@@ -46,5 +48,18 @@ public class AuthController {
             @AuthenticationPrincipal User user){
         service.updatePassword(data, user.getId());
         return ResponseEntity.ok(new MessageResponse("Senha Atualizada com Sucesso"));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getMe(
+            @AuthenticationPrincipal User user){
+        return ResponseEntity.ok(service.getMe(user.getId()));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<UserResponse> updateMe(
+            @RequestBody @Valid UpdateMeRequest data,
+            @AuthenticationPrincipal User user){
+        return ResponseEntity.ok(service.updateMe(data, user.getId()));
     }
 }
