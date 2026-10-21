@@ -1,0 +1,24 @@
+# Pastas de build e dependências
+target/
+build/
+
+# Controle de versão e IDEs
+.git/
+.gitignore
+.gitattributes
+.idea/
+*.iml
+.vscode/
+
+# Arquivos sensíveis
+.env
+.env.*
+
+# Logs e temporários
+*.log
+tmp/
+temp/
+
+# Documentação
+readme.md
+README.md
