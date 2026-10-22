@@ -8,10 +8,12 @@ import br.com.bejacob.backend.entity.Appointment;
 import br.com.bejacob.backend.entity.Services;
 import br.com.bejacob.backend.entity.User;
 import br.com.bejacob.backend.entity.enums.AppointmentStatus;
+import br.com.bejacob.backend.entity.enums.PaymentMethod;
 import br.com.bejacob.backend.exception.appointment.AppointmentConflictException;
 import br.com.bejacob.backend.exception.appointment.AppointmentUnauthorizedException;
 import br.com.bejacob.backend.exception.appointment.InvalidAppointmentTimeException;
 import br.com.bejacob.backend.exception.appointment.PastDateAppointmentException;
+import br.com.bejacob.backend.exception.appointment.PaymentMethodRequiredException;
 import br.com.bejacob.backend.exception.service.ServiceNotFoundException;
 import br.com.bejacob.backend.exception.user.UserNotFoundException;
 import br.com.bejacob.backend.mapper.AppointmentMapper;
@@ -88,6 +90,8 @@ public class AppointmentService {
 
         validateNoConflict(startsAt, endsAt);
 
+        validatePaymentMethodForCompletion(request.status(), request.paymentMethod());
+
         Appointment appointment = mapper.toEntityAdmin(request, user, serviceEntity, endsAt);
         Appointment saved = appointmentRepository.save(appointment);
 
@@ -121,6 +125,10 @@ public class AppointmentService {
             
             validateNoConflictForUpdate(appointment.getId(), newStartsAt, newEndsAt);
         }
+
+        AppointmentStatus newStatus = request.status() != null ? request.status() : appointment.getStatus();
+        PaymentMethod newPaymentMethod = request.paymentMethod() != null ? request.paymentMethod() : appointment.getPaymentMethod();
+        validatePaymentMethodForCompletion(newStatus, newPaymentMethod);
 
         mapper.updateEntityFromDto(request, updatedService, newStartsAt, newEndsAt, appointment);
 
@@ -239,6 +247,12 @@ public class AppointmentService {
                 "O serviço escolhido terminaria às " + endsAt.toLocalTime() + 
                 ". O horário limite de atendimento é até as 20:00. Por favor, escolha um horário mais cedo."
             );
+        }
+    }
+
+    private void validatePaymentMethodForCompletion(AppointmentStatus status, PaymentMethod paymentMethod) {
+        if (status == AppointmentStatus.COMPLETED && paymentMethod == null) {
+            throw new PaymentMethodRequiredException("Informe a forma de pagamento para concluir o agendamento.");
         }
     }
 

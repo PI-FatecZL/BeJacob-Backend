@@ -1,4 +1,5 @@
 package br.com.bejacob.backend.repository;
+import br.com.bejacob.backend.dto.revenue.RevenueByPaymentMethod;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import br.com.bejacob.backend.entity.Appointment;
@@ -48,5 +49,20 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     boolean existsFutureScheduledAppointmentsByUserId(
             @Param("userId") Long userId,
             @Param("currentDateTime") LocalDateTime currentDateTime
+    );
+
+    @Query("""
+        SELECT new br.com.bejacob.backend.dto.revenue.RevenueByPaymentMethod(
+            a.paymentMethod, SUM(a.price), COUNT(a)
+        )
+        FROM Appointment a
+        WHERE a.status = br.com.bejacob.backend.entity.enums.AppointmentStatus.COMPLETED
+        AND a.startsAt >= :start
+        AND a.startsAt < :end
+        GROUP BY a.paymentMethod
+    """)
+    List<RevenueByPaymentMethod> sumRevenueByPaymentMethod(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
     );
 }

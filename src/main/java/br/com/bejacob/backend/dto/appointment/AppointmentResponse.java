@@ -4,8 +4,10 @@ import br.com.bejacob.backend.dto.service.ServiceResponse;
 import br.com.bejacob.backend.dto.user.UserResponse;
 import br.com.bejacob.backend.entity.Appointment;
 import br.com.bejacob.backend.entity.enums.AppointmentStatus;
+import br.com.bejacob.backend.entity.enums.PaymentMethod;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record AppointmentResponse(
@@ -22,6 +24,8 @@ public record AppointmentResponse(
 
         String notes,
         AppointmentStatus status,
+        BigDecimal price,
+        PaymentMethod paymentMethod,
 
         @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
         LocalDateTime createdAt
@@ -41,6 +45,8 @@ public record AppointmentResponse(
                 appointment.getEndsAt(),
                 appointment.getNotes(),
                 appointment.getStatus(),
+                appointment.getPrice(),
+                appointment.getPaymentMethod(),
                 appointment.getCreatedAt()
         );
     }
