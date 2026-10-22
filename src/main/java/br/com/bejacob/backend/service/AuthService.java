@@ -158,34 +158,24 @@ public class AuthService {
     }
 
     public void validateResetToken(String token) {
-        try {
-            String email = tokenService.extractEmailFromResetToken(token);
-            User user = repository.findByEmailAndIsActiveTrue(email)
-                    .orElseThrow(() -> new InvalidCredentialsException("Usuário não encontrado"));
-            tokenService.validatePasswordResetToken(token, user);
-        } catch (Exception e) {
-            throw new InvalidCredentialsException("Link de recuperação inválido ou expirado");
-        }
+        String email = tokenService.extractEmailFromResetToken(token);
+        User user = repository.findByEmailAndIsActiveTrue(email)
+                .orElseThrow(() -> new InvalidCredentialsException("Usuário não encontrado"));
+        tokenService.validatePasswordResetToken(token, user);
     }
 
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
-        try {
-            String email = tokenService.extractEmailFromResetToken(request.token());
-            User user = repository.findByEmailAndIsActiveTrue(email)
-                    .orElseThrow(() -> new InvalidCredentialsException("Usuário não encontrado"));
-            tokenService.validatePasswordResetToken(request.token(), user);
+        String email = tokenService.extractEmailFromResetToken(request.token());
+        User user = repository.findByEmailAndIsActiveTrue(email)
+                .orElseThrow(() -> new InvalidCredentialsException("Usuário não encontrado"));
+        tokenService.validatePasswordResetToken(request.token(), user);
 
-            if (encoder.matches(request.newPassword(), user.getPassword())) {
-                throw new InvalidCredentialsException("A nova senha não pode ser igual à senha atual");
-            }
-
-            user.updatePassword(encoder.encode(request.newPassword()));
-            repository.save(user);
-        } catch (InvalidCredentialsException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new InvalidCredentialsException("Link de recuperação inválido ou expirado");
+        if (encoder.matches(request.newPassword(), user.getPassword())) {
+            throw new InvalidCredentialsException("A nova senha não pode ser igual à senha atual");
         }
+
+        user.updatePassword(encoder.encode(request.newPassword()));
+        repository.save(user);
     }
 }
