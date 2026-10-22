@@ -7,6 +7,8 @@ import br.com.bejacob.backend.dto.auth.RegisterUserRequest;
 import br.com.bejacob.backend.dto.auth.RegisterUserResponse;
 import br.com.bejacob.backend.dto.auth.UpdateMeRequest;
 import br.com.bejacob.backend.dto.auth.UpdatePasswordRequest;
+import br.com.bejacob.backend.dto.auth.email.ForgotPasswordRequest;
+import br.com.bejacob.backend.dto.auth.email.ResetPasswordRequest;
 import br.com.bejacob.backend.dto.user.UserResponse;
 import br.com.bejacob.backend.entity.User;
 import br.com.bejacob.backend.service.AuthService;
@@ -62,4 +64,29 @@ public class AuthController {
             @AuthenticationPrincipal User user){
         return ResponseEntity.ok(service.updateMe(data, user.getId()));
     }
+
+    @PostMapping("/forgot-password")
+    @SecurityRequirements
+    public ResponseEntity<MessageResponse> forgotPassword(
+            @RequestBody @Valid ForgotPasswordRequest request) {
+        service.forgotPassword(request);
+        return ResponseEntity.ok(new MessageResponse("As instruções foram enviadas, caso o e-mail estiver cadastrado."));
+    }
+
+    @GetMapping("/validate-reset-token")
+    @SecurityRequirements
+    public ResponseEntity<MessageResponse> validateResetToken(
+            @RequestParam String token) {
+        service.validateResetToken(token);
+        return ResponseEntity.ok(new MessageResponse("Token válido."));
+    }
+
+    @PostMapping("/reset-password")
+    @SecurityRequirements
+    public ResponseEntity<MessageResponse> resetPassword(
+            @RequestBody @Valid ResetPasswordRequest request) {
+        service.resetPassword(request);
+        return ResponseEntity.ok(new MessageResponse("Nova Senha redefinida com sucesso."));
+    }
+
 }

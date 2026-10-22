@@ -9,24 +9,23 @@ import br.com.bejacob.backend.exception.auth.InactiveUserException;
 import br.com.bejacob.backend.exception.auth.InvalidCredentialsException;
 import br.com.bejacob.backend.exception.auth.InvalidCurrentPasswordException;
 import br.com.bejacob.backend.exception.auth.PhoneAlreadyExistsException;
+import br.com.bejacob.backend.exception.email.PasswordResetEmailException;
 import br.com.bejacob.backend.exception.service.ServiceAlreadyExistsException;
 import br.com.bejacob.backend.exception.service.ServiceHasAppointmentsException;
 import br.com.bejacob.backend.exception.service.ServiceNotFoundException;
 import br.com.bejacob.backend.exception.user.UserHasAppointmentsException;
 import br.com.bejacob.backend.exception.user.UserNotFoundException;
+import br.com.bejacob.backend.exception.token.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -42,7 +41,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(PhoneAlreadyExistsException.class)
-    private ResponseEntity<ApiErrorMessage> PhoneAlreadyExistsException(PhoneAlreadyExistsException exception){
+    private ResponseEntity<ApiErrorMessage> PhoneAlreadyExistsHandler(PhoneAlreadyExistsException exception){
         return buildResponseHandler(HttpStatus.CONFLICT, exception.getMessage());
     }
 
@@ -119,5 +118,40 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .map(error -> error.getDefaultMessage())
                 .collect(Collectors.joining(" | "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiErrorMessage(HttpStatus.BAD_REQUEST, errorMessage));
+    }
+
+    @ExceptionHandler(PasswordResetEmailException.class)
+    public ResponseEntity<ApiErrorMessage> PasswordResetEmailHandler(PasswordResetEmailException exception) {
+        return buildResponseHandler(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+    }
+
+    @ExceptionHandler(ErrorGeneratedTokenException.class)
+    public ResponseEntity<ApiErrorMessage> ErrorGeneratedTokenHandler(ErrorGeneratedTokenException exception) {
+        return buildResponseHandler(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+    }
+
+    @ExceptionHandler(ExpiredOrInvalidJwtException.class)
+    public ResponseEntity<ApiErrorMessage> ExpiredOrInvalidJwtHandler(ExpiredOrInvalidJwtException exception) {
+        return buildResponseHandler(HttpStatus.UNAUTHORIZED, exception.getMessage());
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ApiErrorMessage> InvalidTokenHandler(InvalidTokenException exception) {
+        return buildResponseHandler(HttpStatus.UNAUTHORIZED, exception.getMessage());
+    }
+
+    @ExceptionHandler(InvalidTokenIssuerException.class)
+    public ResponseEntity<ApiErrorMessage> InvalidTokenIssuerHandler(InvalidTokenIssuerException exception) {
+        return buildResponseHandler(HttpStatus.UNAUTHORIZED, exception.getMessage());
+    }
+
+    @ExceptionHandler(InvalidTokenPurposeException.class)
+    public ResponseEntity<ApiErrorMessage> InvalidTokenPurposeHandler(InvalidTokenPurposeException exception) {
+        return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @ExceptionHandler(MalformedTokenException.class)
+    public ResponseEntity<ApiErrorMessage> MalformedTokenHandler(MalformedTokenException exception) {
+        return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 }

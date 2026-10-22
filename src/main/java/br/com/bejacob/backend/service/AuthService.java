@@ -8,6 +8,8 @@ import br.com.bejacob.backend.dto.auth.RegisterUserRequest;
 import br.com.bejacob.backend.dto.auth.RegisterUserResponse;
 import br.com.bejacob.backend.dto.auth.UpdateMeRequest;
 import br.com.bejacob.backend.dto.auth.UpdatePasswordRequest;
+import br.com.bejacob.backend.dto.auth.email.ForgotPasswordRequest;
+import br.com.bejacob.backend.dto.auth.email.ResetPasswordRequest;
 import br.com.bejacob.backend.dto.user.UserResponse;
 import br.com.bejacob.backend.entity.User;
 import br.com.bejacob.backend.entity.enums.UserRoles;
@@ -20,6 +22,7 @@ import br.com.bejacob.backend.exception.user.UserNotFoundException;
 import br.com.bejacob.backend.mapper.UserMapper;
 import br.com.bejacob.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,26 +30,34 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class AuthService {
+
+    @Value("${app.frontend.reset-password-url}")
+    private String resetPasswordUrl;
 
     private final AuthenticationManager manager;
     private final TokenService tokenService;
     private final UserRepository repository;
     private final PasswordEncoder encoder;
     private final UserMapper userMapper;
+    private final EmailService emailService;
 
     public AuthService(
             AuthenticationManager manager,
             TokenService tokenService,
             UserRepository repository,
             PasswordEncoder encoder,
-            UserMapper userMapper) {
+            UserMapper userMapper,
+            EmailService emailService) {
         this.manager = manager;
         this.tokenService = tokenService;
         this.repository = repository;
         this.encoder = encoder;
         this.userMapper = userMapper;
+        this.emailService = emailService;
     }
 
     public RegisterUserResponse register(RegisterUserRequest request) {
@@ -90,7 +101,7 @@ public class AuthService {
                     user.getId(),
                     user.getEmail(),
                     user.getRole()
-            );
+                    );
         } catch (BadCredentialsException e) {
             throw new InvalidCredentialsException("E-mail ou senha inválidos");
         }
@@ -131,5 +142,40 @@ public class AuthService {
         userMapper.updateEntityFromDto(data, user);
         User saved = repository.save(user);
         return userMapper.toResponse(saved);
+    }
+
+    // EMAIL SENHA
+
+    public void forgotPassword(ForgotPasswordRequest request) {
+        Optional<User> userOptional = repository.findByEmailAndIsActiveTrue(request.email());
+        if (userOptional.isEmpty()) {
+            return;
+        }
+        User user = userOptional.get();
+        String token = tokenService.generatePasswordResetToken(user);
+        String resetLink = resetPasswordUrl + "?token=" + token;
+        emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), resetLink);
+    }
+
+    public void validateResetToken(String token) {
+        String email = tokenService.extractEmailFromResetToken(token);
+        User user = repository.findByEmailAndIsActiveTrue(email)
+                .orElseThrow(() -> new InvalidCredentialsException("Usuário não encontrado"));
+        tokenService.validatePasswordResetToken(token, user);
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        String email = tokenService.extractEmailFromResetToken(request.token());
+        User user = repository.findByEmailAndIsActiveTrue(email)
+                .orElseThrow(() -> new InvalidCredentialsException("Usuário não encontrado"));
+        tokenService.validatePasswordResetToken(request.token(), user);
+
+        if (encoder.matches(request.newPassword(), user.getPassword())) {
+            throw new InvalidCredentialsException("A nova senha não pode ser igual à senha atual");
+        }
+
+        user.updatePassword(encoder.encode(request.newPassword()));
+        repository.save(user);
     }
 }
