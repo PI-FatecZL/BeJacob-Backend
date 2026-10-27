@@ -1,5 +1,6 @@
 package br.com.bejacob.backend.dto.appointment;
 
+import br.com.bejacob.backend.entity.enums.PaymentMethod;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +16,9 @@ public record CreateAppointmentRequest(
         @Future
         LocalDateTime startsAt,
 
-        String notes
+        String notes,
+
+        @NotNull(message = "A forma de pagamento é obrigatória")
+        PaymentMethod paymentMethod
 ) {
 }

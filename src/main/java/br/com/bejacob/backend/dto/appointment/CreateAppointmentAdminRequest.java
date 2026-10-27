@@ -1,6 +1,7 @@
 package br.com.bejacob.backend.dto.appointment;
 
 import br.com.bejacob.backend.entity.enums.AppointmentStatus;
+import br.com.bejacob.backend.entity.enums.PaymentMethod;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +22,8 @@ public record CreateAppointmentAdminRequest(
 
         String notes,
 
-        AppointmentStatus status
+        AppointmentStatus status,
+
+        PaymentMethod paymentMethod
 ) {
 }

@@ -15,11 +15,11 @@ import java.time.LocalDateTime;
 public class AppointmentMapper {
 
     public Appointment toEntity(CreateAppointmentRequest request, User user, Services service, LocalDateTime endsAt) {
-        return new Appointment(user, service, request.startsAt(), endsAt, request.notes());
+        return new Appointment(user, service, request.startsAt(), endsAt, request.notes(), request.paymentMethod());
     }
 
     public Appointment toEntityAdmin(CreateAppointmentAdminRequest request, User user, Services service, LocalDateTime endsAt) {
-        return new Appointment(user, service, request.startsAt(), endsAt, request.notes(), request.status());
+        return new Appointment(user, service, request.startsAt(), endsAt, request.notes(), request.status(), request.paymentMethod());
     }
 
     public AppointmentResponse toResponse(Appointment appointment) {
@@ -38,7 +38,8 @@ public class AppointmentMapper {
                 startsAt,
                 endsAt,
                 request.notes(),
-                request.status()
+                request.status(),
+                request.paymentMethod()
         );
     }
 }

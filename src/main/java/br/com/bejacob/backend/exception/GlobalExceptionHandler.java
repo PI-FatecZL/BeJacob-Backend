@@ -4,6 +4,8 @@ import br.com.bejacob.backend.exception.appointment.AppointmentConflictException
 import br.com.bejacob.backend.exception.appointment.AppointmentUnauthorizedException;
 import br.com.bejacob.backend.exception.appointment.InvalidAppointmentTimeException;
 import br.com.bejacob.backend.exception.appointment.PastDateAppointmentException;
+import br.com.bejacob.backend.exception.appointment.PaymentMethodRequiredException;
+import br.com.bejacob.backend.exception.revenue.InvalidRevenuePeriodException;
 import br.com.bejacob.backend.exception.auth.EmailAlreadyExistsException;
 import br.com.bejacob.backend.exception.auth.InactiveUserException;
 import br.com.bejacob.backend.exception.auth.InvalidCredentialsException;
@@ -92,6 +94,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidAppointmentTimeException.class)
     public ResponseEntity<ApiErrorMessage> InvalidAppointmentTimeHandler(InvalidAppointmentTimeException exception) {
+        return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @ExceptionHandler(PaymentMethodRequiredException.class)
+    public ResponseEntity<ApiErrorMessage> PaymentMethodRequiredHandler(PaymentMethodRequiredException exception) {
+        return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @ExceptionHandler(InvalidRevenuePeriodException.class)
+    public ResponseEntity<ApiErrorMessage> InvalidRevenuePeriodHandler(InvalidRevenuePeriodException exception) {
         return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 

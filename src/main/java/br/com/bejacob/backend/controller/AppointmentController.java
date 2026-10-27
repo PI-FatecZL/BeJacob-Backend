@@ -94,6 +94,7 @@ public class AppointmentController {
 
     // ATUALIZAR AGENDAMENTO
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AppointmentResponse> update(
             @PathVariable Long id,
             @RequestBody @Valid UpdateAppointmentRequest request) {
