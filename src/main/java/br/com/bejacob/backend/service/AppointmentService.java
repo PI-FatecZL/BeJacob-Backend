@@ -1,6 +1,7 @@
 package br.com.bejacob.backend.service;
 
 import br.com.bejacob.backend.dto.appointment.AppointmentResponse;
+import br.com.bejacob.backend.dto.appointment.CancelAppointmentRequest;
 import br.com.bejacob.backend.dto.appointment.CreateAppointmentAdminRequest;
 import br.com.bejacob.backend.dto.appointment.CreateAppointmentRequest;
 import br.com.bejacob.backend.dto.appointment.UpdateAppointmentRequest;
@@ -10,7 +11,6 @@ import br.com.bejacob.backend.entity.User;
 import br.com.bejacob.backend.entity.enums.AppointmentStatus;
 import br.com.bejacob.backend.entity.enums.PaymentMethod;
 import br.com.bejacob.backend.exception.appointment.AppointmentConflictException;
-import br.com.bejacob.backend.exception.appointment.AppointmentUnauthorizedException;
 import br.com.bejacob.backend.exception.appointment.InvalidAppointmentTimeException;
 import br.com.bejacob.backend.exception.appointment.PastDateAppointmentException;
 import br.com.bejacob.backend.exception.appointment.PaymentMethodRequiredException;
@@ -136,21 +136,12 @@ public class AppointmentService {
         return mapper.toResponse(saved);
     }
 
-    // 4. CANCELAR AGENDAMENTO (COM VALIDAÇÃO DE PERMISSÃO)
+    // 4. CANCELAR AGENDAMENTO (ADMIN)
     @Transactional
-    public AppointmentResponse cancelAppointment(Long id, User authenticatedUser) {
+    public AppointmentResponse cancelAppointment(Long id, CancelAppointmentRequest request) {
         Appointment appointment = findAppointmentById(id);
 
-        boolean isAdmin = authenticatedUser.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        boolean isOwner = appointment.getUser().getId().equals(authenticatedUser.getId());
-
-        if (!isAdmin && !isOwner) {
-            throw new AppointmentUnauthorizedException("Você não tem permissão para cancelar este agendamento.");
-        }
-
-        appointment.cancel();
+        appointment.cancel(request.cancellationReason());
         Appointment saved = appointmentRepository.save(appointment);
         return mapper.toResponse(saved);
     }

@@ -1,6 +1,7 @@
 package br.com.bejacob.backend.controller;
 
 import br.com.bejacob.backend.dto.appointment.AppointmentResponse;
+import br.com.bejacob.backend.dto.appointment.CancelAppointmentRequest;
 import br.com.bejacob.backend.dto.appointment.CreateAppointmentAdminRequest;
 import br.com.bejacob.backend.dto.appointment.CreateAppointmentRequest;
 import br.com.bejacob.backend.dto.appointment.UpdateAppointmentRequest;
@@ -88,6 +89,7 @@ public class AppointmentController {
 
     // DETALHES DE UM AGENDAMENTO
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AppointmentResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(appointmentService.detailsAppointment(id));
     }
@@ -104,9 +106,10 @@ public class AppointmentController {
 
     // CANCELAR AGENDAMENTO
     @PatchMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AppointmentResponse> cancel(
             @PathVariable Long id,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(appointmentService.cancelAppointment(id, user));
+            @RequestBody @Valid CancelAppointmentRequest request) {
+        return ResponseEntity.ok(appointmentService.cancelAppointment(id, request));
     }
 }

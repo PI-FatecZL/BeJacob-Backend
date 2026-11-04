@@ -26,6 +26,7 @@ public record AppointmentResponse(
         AppointmentStatus status,
         BigDecimal price,
         PaymentMethod paymentMethod,
+        String cancellationReason,
 
         @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
         LocalDateTime createdAt
@@ -47,6 +48,7 @@ public record AppointmentResponse(
                 appointment.getStatus(),
                 appointment.getPrice(),
                 appointment.getPaymentMethod(),
+                appointment.getCancellationReason(),
                 appointment.getCreatedAt()
         );
     }
