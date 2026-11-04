@@ -6,6 +6,7 @@ import br.com.bejacob.backend.exception.appointment.InvalidAppointmentTimeExcept
 import br.com.bejacob.backend.exception.appointment.PastDateAppointmentException;
 import br.com.bejacob.backend.exception.appointment.PaymentMethodRequiredException;
 import br.com.bejacob.backend.exception.revenue.InvalidRevenuePeriodException;
+import br.com.bejacob.backend.exception.report.ReportGenerationException;
 import br.com.bejacob.backend.exception.auth.EmailAlreadyExistsException;
 import br.com.bejacob.backend.exception.auth.InactiveUserException;
 import br.com.bejacob.backend.exception.auth.InvalidCredentialsException;
@@ -165,5 +166,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(MalformedTokenException.class)
     public ResponseEntity<ApiErrorMessage> MalformedTokenHandler(MalformedTokenException exception) {
         return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @ExceptionHandler(ReportGenerationException.class)
+    public ResponseEntity<ApiErrorMessage> ReportGenerationHandler(ReportGenerationException exception) {
+        return buildResponseHandler(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
     }
 }

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Relatório - BeJacob</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin-top: 14mm;
+            margin-bottom: 24mm;
+            margin-left: 16mm;
+            margin-right: 16mm;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #2b2f2d;
+            font-size: 11px;
+            line-height: 1.5;
+            background-color: #ffffff;
+        }
+
+        /* ---------- Rodapé fixo (todas as páginas) ---------- */
+        div.page-footer {
+            position: fixed;
+            bottom: -17mm;
+            left: 0;
+            right: 0;
+            height: 8mm;
+            border-top: 1px solid #d9dfdb;
+            padding-top: 6px;
+        }
+
+        /* Faixa inferior com o texto da marca */
+        div.page-strip {
+            position: fixed;
+            bottom: -24mm;
+            left: -16mm;
+            right: -16mm;
+            height: 7mm;
+            background-color: #2d5a3d;
+            color: #ffffff;
+            text-align: center;
+            font-size: 9px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            line-height: 7mm;
+        }
+
+        div.page-footer table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        div.page-footer td {
+            padding: 0;
+            border: none;
+            vertical-align: middle;
+            font-size: 8px;
+            color: #8a928d;
+        }
+
+        /* Texto da marca no rodapé — altere aqui depois (ex.: nome completo, site, CNPJ) */
+        .footer-brand {
+            font-weight: bold;
+            font-size: 11px;
+            color: #2d5a3d;
+            letter-spacing: 0.5px;
+        }
+
+        .footer-brand-accent {
+            display: inline-block;
+            width: 14px;
+            height: 3px;
+            background-color: #4a7c59;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        .page-num:before { content: counter(page); }
+        .page-tot:before { content: counter(pages); }
+
+        /* ---------- Cabeçalho ---------- */
+        .header-bar {
+            height: 6px;
+            background-color: #2d5a3d;
+            margin-bottom: 18px;
+        }
+
+        .header {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 26px;
+        }
+
+        .header td {
+            border: none;
+            padding: 0 0 14px 0;
+            vertical-align: bottom;
+            border-bottom: 1px solid #d9dfdb;
+        }
+
+        .brand {
+            font-size: 26px;
+            font-weight: bold;
+            color: #2d5a3d;
+            letter-spacing: 1px;
+            line-height: 1.1;
+        }
+
+        .report-title {
+            font-size: 11px;
+            color: #6b736e;
+            margin-top: 4px;
+        }
+
+        .period-box {
+            text-align: right;
+            font-size: 9px;
+            color: #8a928d;
+        }
+
+        .period-value {
+            font-size: 13px;
+            font-weight: bold;
+            color: #2b2f2d;
+            margin-top: 2px;
+        }
+
+        /* ---------- KPI Cards ---------- */
+        .kpi-row {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10px 0;
+            margin: 0 -10px 30px -10px;
+        }
+
+        .kpi-row td {
+            width: 33.33%;
+            padding: 14px 16px 14px 16px;
+            text-align: left;
+            border: 1px solid #e3e8e5;
+            background-color: #fafbfa;
+            border-radius: 4px;
+            vertical-align: top;
+        }
+
+        .kpi-row td.main    { border-top: 4px solid #2d5a3d; }
+        .kpi-row td.success { border-top: 4px solid #5ca06e; }
+        .kpi-row td.danger  { border-top: 4px solid #c0392b; }
+
+        .kpi-label {
+            font-size: 9.5px;
+            color: #6b736e;
+            margin-bottom: 4px;
+        }
+
+        .kpi-value {
+            font-size: 30px;
+            font-weight: bold;
+            color: #2d5a3d;
+            line-height: 1.1;
+        }
+
+        .kpi-value.success { color: #3f8a55; }
+        .kpi-value.danger  { color: #c0392b; }
+
+        .kpi-note {
+            font-size: 9px;
+            color: #8a928d;
+            margin-top: 6px;
+        }
+
+        /* ---------- Seção do gráfico ---------- */
+        .section-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #2d5a3d;
+            margin: 0;
+        }
+
+        .section-sub {
+            font-size: 9.5px;
+            color: #8a928d;
+            margin: 2px 0 14px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #d9dfdb;
+        }
+
+        /* ---------- Gráfico de barras horizontal ---------- */
+        .chart-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .chart-table th {
+            font-size: 8.5px;
+            font-weight: bold;
+            color: #8a928d;
+            text-align: left;
+            padding: 0 0 6px 0;
+            border-bottom: 1px solid #d9dfdb;
+        }
+
+        .chart-table td {
+            padding: 7px 0;
+            vertical-align: middle;
+            border-bottom: 1px solid #f0f2f1;
+        }
+
+        .chart-rank {
+            width: 5%;
+            font-size: 9.5px;
+            font-weight: bold;
+            color: #a0a8a3;
+        }
+
+        .chart-label {
+            width: 28%;
+            font-size: 10.5px;
+            color: #2b2f2d;
+            padding-right: 12px;
+        }
+
+        .chart-bar-cell {
+            width: 55%;
+        }
+
+        .chart-bar-track {
+            background-color: #eef1ef;
+            height: 14px;
+            width: 100%;
+            border-radius: 2px;
+        }
+
+        .chart-bar-fill {
+            background-color: #7fae8c;
+            height: 14px;
+            border-radius: 2px;
+            min-width: 2px;
+        }
+
+        /* Serviço mais agendado em destaque */
+        tr.top .chart-bar-fill { background-color: #2d5a3d; }
+        tr.top .chart-label    { font-weight: bold; }
+        tr.top .chart-rank     { color: #2d5a3d; }
+
+        .chart-count {
+            width: 12%;
+            font-size: 12px;
+            font-weight: bold;
+            color: #2d5a3d;
+            padding-left: 12px;
+            text-align: right;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #8a928d;
+            font-size: 11px;
+            padding: 30px 0;
+            border: 1px dashed #d9dfdb;
+            border-radius: 4px;
+        }
+
+        .page-break  { page-break-before: always; }
+        .avoid-break { page-break-inside: avoid; }
+    </style>
+</head>
+<body>
+
+<!-- ================= RODAPÉ FIXO (TODAS AS PÁGINAS) ================= -->
+<div class="page-footer">
+    <table>
+        <tr>
+            <td style="text-align: left; width: 60%;">
+                Gerado em <span th:text="${generatedAt}">03/11/2026 às 20:00</span>
+            </td>
+            <td style="text-align: right; width: 40%;">
+                Página <span class="page-num" style="font-weight: bold; color: #2d5a3d;"></span> de <span class="page-tot"></span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- Faixa inferior — altere o texto aqui depois -->
+<div class="page-strip">Relatório BeJacob</div>
+
+<!-- ================= CABEÇALHO ================= -->
+<div class="header-bar"></div>
+
+<table class="header">
+    <tr>
+        <td style="width: 60%;">
+            <div class="brand">BeJacob</div>
+            <div class="report-title">Relatório de agendamentos</div>
+        </td>
+        <td class="period-box" style="width: 40%;">
+            <div>Período</div>
+            <div class="period-value">
+                <span th:text="${startFormatted}">01/01/2026</span> a <span th:text="${endFormatted}">31/12/2026</span>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<!-- ================= KPI CARDS ================= -->
+<table class="kpi-row avoid-break">
+    <tr>
+        <td class="main">
+            <div class="kpi-label">Total de agendamentos</div>
+            <div class="kpi-value" th:text="${data.totalAppointments}">0</div>
+            <div class="kpi-note">no período selecionado</div>
+        </td>
+        <td class="success">
+            <div class="kpi-label">Concluídos</div>
+            <div class="kpi-value success" th:text="${data.totalCompleted}">0</div>
+            <div class="kpi-note">
+                <span th:text="${data.totalAppointments > 0 ? T(java.lang.Math).round(data.totalCompleted * 100.0 / data.totalAppointments) : 0}">0</span>% do total
+            </div>
+        </td>
+        <td class="danger">
+            <div class="kpi-label">Cancelados</div>
+            <div class="kpi-value danger" th:text="${data.totalCanceled()}">0</div>
+            <div class="kpi-note">
+                <span th:text="${data.totalAppointments > 0 ? T(java.lang.Math).round(data.totalCanceled() * 100.0 / data.totalAppointments) : 0}">0</span>% do total
+            </div>
+        </td>
+    </tr>
+</table>
+
+<!-- ================= GRÁFICO DE BARRAS - SERVIÇOS ================= -->
+<div class="section-title">Serviços agendados no período</div>
+<div class="section-sub">Ordenados do mais para o menos agendado</div>
+
+<table class="chart-table" th:if="${!#lists.isEmpty(data.servicesByVolume)}">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Serviço</th>
+        <th>Volume relativo</th>
+        <th style="text-align: right;">Qtd.</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="s, st : ${data.servicesByVolume}"
+        th:classappend="${st.first} ? 'top'"
+        class="avoid-break">
+        <td class="chart-rank" th:text="${st.count}">1</td>
+        <td class="chart-label" th:text="${s.name}">Corte</td>
+        <td class="chart-bar-cell">
+            <div class="chart-bar-track">
+                <div class="chart-bar-fill"
+                     th:style="'width:' + ${T(java.lang.Math).round(s.count * 100.0 / maxServiceCount)} + '%;'"></div>
+            </div>
+        </td>
+        <td class="chart-count" th:text="${s.count}">0</td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="empty-message" th:if="${#lists.isEmpty(data.servicesByVolume)}">
+    Nenhum serviço agendado no período selecionado.
+</div>
+
+</body>
+</html>
