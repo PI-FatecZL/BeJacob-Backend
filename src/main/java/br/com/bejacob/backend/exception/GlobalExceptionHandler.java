@@ -12,6 +12,7 @@ import br.com.bejacob.backend.exception.auth.InvalidCredentialsException;
 import br.com.bejacob.backend.exception.auth.InvalidCurrentPasswordException;
 import br.com.bejacob.backend.exception.auth.PhoneAlreadyExistsException;
 import br.com.bejacob.backend.exception.email.PasswordResetEmailException;
+import br.com.bejacob.backend.exception.notification.NotificationNotFoundException;
 import br.com.bejacob.backend.exception.service.ServiceAlreadyExistsException;
 import br.com.bejacob.backend.exception.service.ServiceHasAppointmentsException;
 import br.com.bejacob.backend.exception.service.ServiceNotFoundException;
@@ -54,6 +55,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     private ResponseEntity<ApiErrorMessage> UserNotFoundHandler(UserNotFoundException exception){
+        return buildResponseHandler(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(NotificationNotFoundException.class)
+    private ResponseEntity<ApiErrorMessage> NotificationNotFoundHandler(NotificationNotFoundException exception){
         return buildResponseHandler(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 

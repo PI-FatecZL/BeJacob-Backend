@@ -38,16 +38,19 @@ public class AppointmentService {
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
     private final AppointmentMapper mapper;
+    private final NotificationService notificationService;
 
     public AppointmentService(
             AppointmentRepository appointmentRepository,
             ServiceRepository serviceRepository,
             UserRepository userRepository,
-            AppointmentMapper mapper) {
+            AppointmentMapper mapper,
+            NotificationService notificationService) {
         this.appointmentRepository = appointmentRepository;
         this.serviceRepository = serviceRepository;
         this.userRepository = userRepository;
         this.mapper = mapper;
+        this.notificationService = notificationService;
     }
 
     // 1. CRIAR AGENDAMENTO (CLIENTE)
@@ -69,6 +72,8 @@ public class AppointmentService {
 
         Appointment appointment = mapper.toEntity(request, user, serviceEntity, endsAt);
         Appointment saved = appointmentRepository.save(appointment);
+
+        notificationService.notifyNewAppointment(saved);
 
         return mapper.toResponse(saved);
     }
