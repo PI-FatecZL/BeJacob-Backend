@@ -52,6 +52,9 @@ public class Appointment {
     @Column(name = "payment_method", length = 10)
     private PaymentMethod paymentMethod;
 
+    @Column(name = "cancellation_reason", columnDefinition = "TEXT")
+    private String cancellationReason;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -79,8 +82,9 @@ public class Appointment {
     }
 
 
-    public void cancel() {
+    public void cancel(String cancellationReason) {
         this.status = AppointmentStatus.CANCELED;
+        this.cancellationReason = cancellationReason;
     }
 
     public void updateStatus(AppointmentStatus newStatus) {
