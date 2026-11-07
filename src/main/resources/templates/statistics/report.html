@@ -62,23 +62,6 @@
             color: #8a928d;
         }
 
-        /* Texto da marca no rodapé — altere aqui depois (ex.: nome completo, site, CNPJ) */
-        .footer-brand {
-            font-weight: bold;
-            font-size: 11px;
-            color: #2d5a3d;
-            letter-spacing: 0.5px;
-        }
-
-        .footer-brand-accent {
-            display: inline-block;
-            width: 14px;
-            height: 3px;
-            background-color: #4a7c59;
-            margin-right: 6px;
-            vertical-align: middle;
-        }
-
         .page-num:before { content: counter(page); }
         .page-tot:before { content: counter(pages); }
 
@@ -134,7 +117,7 @@
             width: 100%;
             border-collapse: separate;
             border-spacing: 10px 0;
-            margin: 0 -10px 30px -10px;
+            margin: 0 -10px 26px -10px;
         }
 
         .kpi-row td {
@@ -173,7 +156,7 @@
             margin-top: 6px;
         }
 
-        /* ---------- Seção do gráfico ---------- */
+        /* ---------- Seções ---------- */
         .section-title {
             font-size: 13px;
             font-weight: bold;
@@ -185,7 +168,7 @@
             font-size: 9.5px;
             color: #8a928d;
             margin: 2px 0 14px 0;
-            padding-bottom: 10px;
+            padding-bottom: 8px;
             border-bottom: 1px solid #d9dfdb;
         }
 
@@ -193,6 +176,7 @@
         .chart-table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 10px;
         }
 
         .chart-table th {
@@ -242,7 +226,6 @@
             min-width: 2px;
         }
 
-        /* Serviço mais agendado em destaque */
         tr.top .chart-bar-fill { background-color: #2d5a3d; }
         tr.top .chart-label    { font-weight: bold; }
         tr.top .chart-rank     { color: #2d5a3d; }
@@ -256,13 +239,87 @@
             text-align: right;
         }
 
+        /* ---------- Grid de Usuários (3 linhas x 2 colunas via CSS float) ---------- */
+        .users-container {
+            width: 100%;
+            margin-bottom: 14px;
+        }
+
+        .user-card {
+            float: left;
+            width: 48.5%;
+            border: 1px solid #e3e8e5;
+            border-top: 3px solid #2d5a3d;
+            background-color: #fafbfa;
+            border-radius: 4px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        .card-left {
+            margin-right: 3%;
+        }
+
+        .card-right {
+            margin-right: 0;
+        }
+
+        .user-header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 4px;
+        }
+
+        .user-header-table td {
+            padding: 0;
+            border: none;
+            vertical-align: middle;
+        }
+
+        .user-name {
+            font-size: 11px;
+            font-weight: bold;
+            color: #2b2f2d;
+            text-align: left;
+        }
+
+        .user-badge {
+            font-size: 8.5px;
+            font-weight: bold;
+            color: #2d5a3d;
+            background-color: #e8f0eb;
+            padding: 2px 6px;
+            border-radius: 3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .user-contact {
+            font-size: 8.5px;
+            color: #6b736e;
+        }
+
+        .user-sep {
+            color: #b0b8b3;
+            margin: 0 4px;
+        }
+
+        .clear-both {
+            clear: both;
+            height: 0;
+            line-height: 0;
+            font-size: 0;
+        }
+
         .empty-message {
             text-align: center;
             color: #8a928d;
             font-size: 11px;
-            padding: 30px 0;
+            padding: 24px 0;
             border: 1px dashed #d9dfdb;
             border-radius: 4px;
+            margin-bottom: 14px;
         }
 
         .page-break  { page-break-before: always; }
@@ -285,7 +342,7 @@
     </table>
 </div>
 
-<!-- Faixa inferior — altere o texto aqui depois -->
+<!-- Faixa inferior com o nome do Studio -->
 <div class="page-strip">Relatório BeJacob</div>
 
 <!-- ================= CABEÇALHO ================= -->
@@ -318,14 +375,14 @@
             <div class="kpi-label">Concluídos</div>
             <div class="kpi-value success" th:text="${data.totalCompleted}">0</div>
             <div class="kpi-note">
-                <span th:text="${data.totalAppointments > 0 ? T(java.lang.Math).round(data.totalCompleted * 100.0 / data.totalAppointments) : 0}">0</span>% do total
+                <span th:text="${data.totalAppointments > 0 ? (data.totalCompleted * 100) / data.totalAppointments : 0}">0</span>% do total
             </div>
         </td>
         <td class="danger">
             <div class="kpi-label">Cancelados</div>
-            <div class="kpi-value danger" th:text="${data.totalCanceled()}">0</div>
+            <div class="kpi-value danger" th:text="${data.totalCanceled}">0</div>
             <div class="kpi-note">
-                <span th:text="${data.totalAppointments > 0 ? T(java.lang.Math).round(data.totalCanceled() * 100.0 / data.totalAppointments) : 0}">0</span>% do total
+                <span th:text="${data.totalAppointments > 0 ? (data.totalCanceled * 100) / data.totalAppointments : 0}">0</span>% do total
             </div>
         </td>
     </tr>
@@ -353,7 +410,7 @@
         <td class="chart-bar-cell">
             <div class="chart-bar-track">
                 <div class="chart-bar-fill"
-                     th:style="'width:' + ${T(java.lang.Math).round(s.count * 100.0 / maxServiceCount)} + '%;'"></div>
+                     th:style="'width:' + ${(s.count * 100) / maxServiceCount} + '%;'"></div>
             </div>
         </td>
         <td class="chart-count" th:text="${s.count}">0</td>
@@ -363,6 +420,35 @@
 
 <div class="empty-message" th:if="${#lists.isEmpty(data.servicesByVolume)}">
     Nenhum serviço agendado no período selecionado.
+</div>
+
+<!-- ================= USUÁRIOS COM MAIS AGENDAMENTOS ================= -->
+<div class="section-title" style="margin-top: 24px;">Usuários com mais agendamentos</div>
+<div class="section-sub">Top 6 clientes mais frequentes no período selecionado</div>
+
+<div class="users-container avoid-break" th:if="${!#lists.isEmpty(data.topUsers)}">
+    <div th:each="u, stat : ${data.topUsers}">
+        <div class="user-card" th:classappend="${stat.odd} ? 'card-left' : 'card-right'">
+            <table class="user-header-table">
+                <tr>
+                    <td class="user-name" th:text="${u.name}">Nome do Cliente</td>
+                    <td class="user-badge" th:text="${u.totalAppointments} + ' agendamento' + (${u.totalAppointments > 1} ? 's' : '')">5 agendamentos</td>
+                </tr>
+            </table>
+            <div class="user-contact">
+                <span th:text="${u.email}">email@exemplo.com</span>
+                <span class="user-sep">&#8226;</span>
+                <span th:text="${u.phone}">(11) 99999-9999</span>
+            </div>
+        </div>
+        <!-- Quebra de linha após cada 2 cards -->
+        <div class="clear-both" th:if="${stat.even}"></div>
+    </div>
+    <div class="clear-both"></div>
+</div>
+
+<div class="empty-message" th:if="${#lists.isEmpty(data.topUsers)}">
+    Nenhum agendamento registrado no período selecionado.
 </div>
 
 </body>

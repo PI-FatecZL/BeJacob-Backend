@@ -12,10 +12,15 @@ import java.util.List;
 @Repository
 public interface StatisticRepository extends JpaRepository<Appointment, Long> {
 
+    /**
+     * Busca todos os agendamentos do período com o Serviço e o Usuário associados (Eager fetch),
+     * permitindo agregações de serviços e ranking de clientes em memória sem N+1 queries.
+     */
     @Query("""
         SELECT a
         FROM Appointment a
         JOIN FETCH a.service
+        JOIN FETCH a.user
         WHERE a.startsAt >= :start
         AND a.startsAt < :end
     """)

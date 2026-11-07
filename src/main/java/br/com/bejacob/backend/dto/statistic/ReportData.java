@@ -9,5 +9,6 @@ public record ReportData(
         Long totalAppointments,
         Long totalCompleted,
         Long totalCanceled,
-        List<ServiceVolumeReport> servicesByVolume) {
+        List<ServiceVolumeReport> servicesByVolume,
+        List<TopUserReport> topUsers) {
 }

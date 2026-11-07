@@ -1,5 +1,6 @@
 package br.com.bejacob.backend.controller;
 
+import br.com.bejacob.backend.dto.revenue.RevenueResponse;
 import br.com.bejacob.backend.dto.statistic.ReportData;
 import br.com.bejacob.backend.service.StatisticService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -27,6 +28,14 @@ public class StatisticController {
         this.statisticService = statisticService;
     }
 
+    @GetMapping("/revenue")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RevenueResponse> getRevenue(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        return ResponseEntity.ok(statisticService.getRevenue(startDate, endDate));
+    }
+
     @GetMapping("/report")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<byte[]> generateReport(
@@ -36,7 +45,7 @@ public class StatisticController {
         ReportData data = statisticService.buildReportData(startDate, endDate);
         byte[] pdfBytes = statisticService.generatePdf(data);
 
-        String filename = "relatorio-bejacob-(%s-a-%s).pdf".formatted(
+        String filename = "relatorio-bejacob-(%s_a_%s).pdf".formatted(
                 startDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
                 endDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
         );
