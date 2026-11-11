@@ -2,6 +2,7 @@ package br.com.bejacob.backend.mapper;
 
 import br.com.bejacob.backend.dto.service.ServiceRequest;
 import br.com.bejacob.backend.dto.service.ServiceResponse;
+import br.com.bejacob.backend.dto.service.UpdateServiceRequest;
 import br.com.bejacob.backend.entity.Services;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,7 @@ public class ServiceMapper {
         return new ServiceResponse(service);
     }
 
-    public void updateEntityFromDto(ServiceRequest request, Services service) {
+    public void updateEntityFromDto(UpdateServiceRequest request, Services service) {
         service.updateDetails(request);
     }
 }

@@ -1,6 +1,7 @@
 package br.com.bejacob.backend.entity;
 
 import br.com.bejacob.backend.dto.service.ServiceRequest;
+import br.com.bejacob.backend.dto.service.UpdateServiceRequest;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -57,10 +58,11 @@ public class Services {
     }
 
 
-    public void updateDetails(ServiceRequest request) {
+    public void updateDetails(UpdateServiceRequest request) {
         if (request.name() != null) this.name = request.name();
         if (request.description() != null) this.description = request.description();
         if (request.durationMinutes() != null) this.durationMinutes = request.durationMinutes();
         if (request.price() != null) this.price = request.price();
+        if (request.active() != null) this.active = request.active();
     }
 }
