@@ -2,6 +2,7 @@ package br.com.bejacob.backend.service;
 
 import br.com.bejacob.backend.dto.service.ServiceRequest;
 import br.com.bejacob.backend.dto.service.ServiceResponse;
+import br.com.bejacob.backend.dto.service.UpdateServiceRequest;
 import br.com.bejacob.backend.entity.Services;
 import br.com.bejacob.backend.exception.service.ServiceAlreadyExistsException;
 import br.com.bejacob.backend.exception.service.ServiceHasAppointmentsException;
@@ -57,11 +58,11 @@ public class ServiceService {
 
     // atualizar serviços
     @Transactional
-    public ServiceResponse update(Long id, ServiceRequest request) {
+    public ServiceResponse update(Long id, UpdateServiceRequest request) {
         Services service = repository.findById(id)
                 .orElseThrow(() -> new ServiceNotFoundException("Serviço não encontrado"));
 
-        if (!service.getName().equalsIgnoreCase(request.name()) && repository.existsByNameIgnoreCase(request.name())) {
+        if (request.name() != null && !service.getName().equalsIgnoreCase(request.name()) && repository.existsByNameIgnoreCase(request.name())) {
             throw new ServiceAlreadyExistsException("Já existe um serviço cadastrado com este nome.");
         }
 

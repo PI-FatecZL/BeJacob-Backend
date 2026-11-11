@@ -2,6 +2,7 @@ package br.com.bejacob.backend.controller;
 
 import br.com.bejacob.backend.dto.service.ServiceRequest;
 import br.com.bejacob.backend.dto.service.ServiceResponse;
+import br.com.bejacob.backend.dto.service.UpdateServiceRequest;
 import br.com.bejacob.backend.service.ServiceService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
@@ -46,7 +47,7 @@ public class ServiceController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceResponse> update(
             @PathVariable Long id,
-            @RequestBody @Valid ServiceRequest request) {
+            @RequestBody @Valid UpdateServiceRequest request) {
         return ResponseEntity.ok(service.update(id, request));
     }
 
