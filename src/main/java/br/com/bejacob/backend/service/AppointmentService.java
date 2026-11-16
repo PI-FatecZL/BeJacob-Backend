@@ -20,6 +20,7 @@ import br.com.bejacob.backend.mapper.AppointmentMapper;
 import br.com.bejacob.backend.repository.AppointmentRepository;
 import br.com.bejacob.backend.repository.ServiceRepository;
 import br.com.bejacob.backend.repository.UserRepository;
+import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,18 +40,21 @@ public class AppointmentService {
     private final UserRepository userRepository;
     private final AppointmentMapper mapper;
     private final NotificationService notificationService;
+    private final GoogleCalendarService googleCalendarService;
 
     public AppointmentService(
             AppointmentRepository appointmentRepository,
             ServiceRepository serviceRepository,
             UserRepository userRepository,
             AppointmentMapper mapper,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            GoogleCalendarService googleCalendarService) {
         this.appointmentRepository = appointmentRepository;
         this.serviceRepository = serviceRepository;
         this.userRepository = userRepository;
         this.mapper = mapper;
         this.notificationService = notificationService;
+        this.googleCalendarService = googleCalendarService;
     }
 
     // 1. CRIAR AGENDAMENTO (CLIENTE)
@@ -74,6 +78,7 @@ public class AppointmentService {
         Appointment saved = appointmentRepository.save(appointment);
 
         notificationService.notifyNewAppointment(saved);
+        googleCalendarService.createEvent(saved);
 
         return mapper.toResponse(saved);
     }
@@ -99,6 +104,7 @@ public class AppointmentService {
 
         Appointment appointment = mapper.toEntityAdmin(request, user, serviceEntity, endsAt);
         Appointment saved = appointmentRepository.save(appointment);
+        googleCalendarService.createEvent(saved);
 
         return mapper.toResponse(saved);
     }
@@ -138,6 +144,8 @@ public class AppointmentService {
         mapper.updateEntityFromDto(request, updatedService, newStartsAt, newEndsAt, appointment);
 
         Appointment saved = appointmentRepository.save(appointment);
+        googleCalendarService.updateEvent(saved);
+
         return mapper.toResponse(saved);
     }
 
@@ -148,6 +156,9 @@ public class AppointmentService {
 
         appointment.cancel(request.cancellationReason());
         Appointment saved = appointmentRepository.save(appointment);
+
+        googleCalendarService.deleteEvent(saved);
+
         return mapper.toResponse(saved);
     }
 

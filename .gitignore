@@ -86,3 +86,7 @@ Desktop.ini
 
 **/db_data/
 docker-volume/
+
+# GOOGLE CREDENCIAIS
+
+src/main/resources/google-calendar-credentials.json
