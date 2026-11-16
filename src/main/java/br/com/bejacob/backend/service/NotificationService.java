@@ -66,4 +66,10 @@ public class NotificationService {
         return repository.findById(id)
                 .orElseThrow(() -> new NotificationNotFoundException("Notificação não encontrada."));
     }
+
+    // PARA PROCEDURE
+    @Transactional
+    public void cleanupOldNotifications() {
+        repository.cleanupOldNotifications(90);
+    }
 }
