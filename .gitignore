@@ -89,4 +89,4 @@ docker-volume/
 
 # GOOGLE CREDENCIAIS
 
-src/main/resources/google-calendar-credentials.json
+run/secrets/google-calendar-credentials.json
