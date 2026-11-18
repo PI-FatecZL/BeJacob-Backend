@@ -16,10 +16,15 @@ import br.com.bejacob.backend.exception.appointment.PastDateAppointmentException
 import br.com.bejacob.backend.exception.appointment.PaymentMethodRequiredException;
 import br.com.bejacob.backend.exception.service.ServiceNotFoundException;
 import br.com.bejacob.backend.exception.user.UserNotFoundException;
+import br.com.bejacob.backend.dto.google.AppointmentCalendarData;
+import br.com.bejacob.backend.dto.google.AppointmentCanceledEvent;
+import br.com.bejacob.backend.dto.google.AppointmentCreatedEvent;
+import br.com.bejacob.backend.dto.google.AppointmentUpdatedEvent;
 import br.com.bejacob.backend.mapper.AppointmentMapper;
 import br.com.bejacob.backend.repository.AppointmentRepository;
 import br.com.bejacob.backend.repository.ServiceRepository;
 import br.com.bejacob.backend.repository.UserRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,18 +44,21 @@ public class AppointmentService {
     private final UserRepository userRepository;
     private final AppointmentMapper mapper;
     private final NotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public AppointmentService(
             AppointmentRepository appointmentRepository,
             ServiceRepository serviceRepository,
             UserRepository userRepository,
             AppointmentMapper mapper,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            ApplicationEventPublisher eventPublisher) {
         this.appointmentRepository = appointmentRepository;
         this.serviceRepository = serviceRepository;
         this.userRepository = userRepository;
         this.mapper = mapper;
         this.notificationService = notificationService;
+        this.eventPublisher = eventPublisher;
     }
 
     // 1. CRIAR AGENDAMENTO (CLIENTE)
@@ -74,6 +82,7 @@ public class AppointmentService {
         Appointment saved = appointmentRepository.save(appointment);
 
         notificationService.notifyNewAppointment(saved);
+        eventPublisher.publishEvent(new AppointmentCreatedEvent(AppointmentCalendarData.from(saved)));
 
         return mapper.toResponse(saved);
     }
@@ -99,6 +108,8 @@ public class AppointmentService {
 
         Appointment appointment = mapper.toEntityAdmin(request, user, serviceEntity, endsAt);
         Appointment saved = appointmentRepository.save(appointment);
+
+        eventPublisher.publishEvent(new AppointmentCreatedEvent(AppointmentCalendarData.from(saved)));
 
         return mapper.toResponse(saved);
     }
@@ -138,6 +149,8 @@ public class AppointmentService {
         mapper.updateEntityFromDto(request, updatedService, newStartsAt, newEndsAt, appointment);
 
         Appointment saved = appointmentRepository.save(appointment);
+        eventPublisher.publishEvent(new AppointmentUpdatedEvent(AppointmentCalendarData.from(saved)));
+
         return mapper.toResponse(saved);
     }
 
@@ -148,6 +161,9 @@ public class AppointmentService {
 
         appointment.cancel(request.cancellationReason());
         Appointment saved = appointmentRepository.save(appointment);
+
+        eventPublisher.publishEvent(new AppointmentCanceledEvent(saved.getId()));
+
         return mapper.toResponse(saved);
     }
 

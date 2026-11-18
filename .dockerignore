@@ -22,3 +22,7 @@ temp/
 # Documentação
 readme.md
 README.md
+
+# GOOGLE CREDENCIAIS
+
+run/secrets/google-calendar-credentials.json

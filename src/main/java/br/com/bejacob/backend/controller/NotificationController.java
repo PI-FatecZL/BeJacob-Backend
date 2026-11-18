@@ -56,4 +56,11 @@ public class NotificationController {
         notificationService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    // PARA FUNCIONAMENTO DA PROCEDURE
+    @DeleteMapping("/clean-old-notifications")
+    public ResponseEntity<Void> cleanupOldNotifications() {
+        notificationService.cleanupOldNotifications();
+        return ResponseEntity.noContent().build();
+    }
 }
