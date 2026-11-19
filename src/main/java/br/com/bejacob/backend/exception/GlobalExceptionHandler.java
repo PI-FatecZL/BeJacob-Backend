@@ -2,6 +2,7 @@ package br.com.bejacob.backend.exception;
 
 import br.com.bejacob.backend.exception.appointment.AppointmentConflictException;
 import br.com.bejacob.backend.exception.appointment.AppointmentUnauthorizedException;
+import br.com.bejacob.backend.exception.appointment.InvalidAppointmentStatusException;
 import br.com.bejacob.backend.exception.appointment.InvalidAppointmentTimeException;
 import br.com.bejacob.backend.exception.appointment.PastDateAppointmentException;
 import br.com.bejacob.backend.exception.appointment.PaymentMethodRequiredException;
@@ -108,6 +109,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidAppointmentTimeException.class)
     public ResponseEntity<ApiErrorMessage> InvalidAppointmentTimeHandler(InvalidAppointmentTimeException exception) {
         return buildResponseHandler(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @ExceptionHandler(InvalidAppointmentStatusException.class)
+    public ResponseEntity<ApiErrorMessage> InvalidAppointmentStatusHandler(InvalidAppointmentStatusException exception) {
+        return buildResponseHandler(HttpStatus.CONFLICT, exception.getMessage());
     }
 
     @ExceptionHandler(PaymentMethodRequiredException.class)

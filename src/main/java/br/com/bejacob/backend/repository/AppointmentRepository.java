@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import br.com.bejacob.backend.entity.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -26,18 +27,14 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("endOfDay") LocalDateTime endOfDay
     );
 
-    @Query("""
-        SELECT COUNT(a) > 0
-        FROM Appointment a
-        WHERE a.startsAt < :endsAt
-        AND a.endsAt > :startsAt
-    """)
-    boolean existsConflict(
-            @Param("startsAt") LocalDateTime startsAt,
-            @Param("endsAt") LocalDateTime endsAt
-    );
-
     boolean existsByServiceId(Long serviceId);
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "CALL sp_complete_appointment(CAST(:id AS BIGINT), CAST(:paymentMethod AS VARCHAR), CAST(:referenceTime AS TIMESTAMP))", nativeQuery = true)
+    void completeAppointment(
+            @Param("id") Long id,
+            @Param("paymentMethod") String paymentMethod,
+            @Param("referenceTime") LocalDateTime referenceTime
+    );
 
     @Query("""
         SELECT COUNT(a) > 0
