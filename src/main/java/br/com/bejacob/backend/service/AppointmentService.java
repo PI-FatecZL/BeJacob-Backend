@@ -10,7 +10,9 @@ import br.com.bejacob.backend.entity.Services;
 import br.com.bejacob.backend.entity.User;
 import br.com.bejacob.backend.entity.enums.AppointmentStatus;
 import br.com.bejacob.backend.entity.enums.PaymentMethod;
+import br.com.bejacob.backend.exception.DatabaseErrorCodes;
 import br.com.bejacob.backend.exception.appointment.AppointmentConflictException;
+import br.com.bejacob.backend.exception.appointment.InvalidAppointmentStatusException;
 import br.com.bejacob.backend.exception.appointment.InvalidAppointmentTimeException;
 import br.com.bejacob.backend.exception.appointment.PastDateAppointmentException;
 import br.com.bejacob.backend.exception.appointment.PaymentMethodRequiredException;
@@ -25,6 +27,7 @@ import br.com.bejacob.backend.repository.AppointmentRepository;
 import br.com.bejacob.backend.repository.ServiceRepository;
 import br.com.bejacob.backend.repository.UserRepository;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -76,10 +79,8 @@ public class AppointmentService {
     
         validateClosingTime(startsAt, endsAt);
 
-        validateNoConflict(startsAt, endsAt);
-
         Appointment appointment = mapper.toEntity(request, user, serviceEntity, endsAt);
-        Appointment saved = appointmentRepository.save(appointment);
+        Appointment saved = saveCheckingConflict(appointment);
 
         notificationService.notifyNewAppointment(saved);
         eventPublisher.publishEvent(new AppointmentCreatedEvent(AppointmentCalendarData.from(saved)));
@@ -102,12 +103,10 @@ public class AppointmentService {
       
         validateClosingTime(startsAt, endsAt);
 
-        validateNoConflict(startsAt, endsAt);
-
         validatePaymentMethodForCompletion(request.status(), request.paymentMethod());
 
         Appointment appointment = mapper.toEntityAdmin(request, user, serviceEntity, endsAt);
-        Appointment saved = appointmentRepository.save(appointment);
+        Appointment saved = saveCheckingConflict(appointment);
 
         eventPublisher.publishEvent(new AppointmentCreatedEvent(AppointmentCalendarData.from(saved)));
 
@@ -138,17 +137,27 @@ public class AppointmentService {
             
            
             validateClosingTime(newStartsAt, newEndsAt);
-            
-            validateNoConflictForUpdate(appointment.getId(), newStartsAt, newEndsAt);
         }
 
-        AppointmentStatus newStatus = request.status() != null ? request.status() : appointment.getStatus();
         PaymentMethod newPaymentMethod = request.paymentMethod() != null ? request.paymentMethod() : appointment.getPaymentMethod();
-        validatePaymentMethodForCompletion(newStatus, newPaymentMethod);
+        boolean completing = request.status() == AppointmentStatus.COMPLETED
+                && appointment.getStatus() != AppointmentStatus.COMPLETED;
+        UpdateAppointmentRequest changes = request;
+        if (completing) {
+            changes = new UpdateAppointmentRequest(request.serviceId(), request.startsAt(), request.notes(), null, null);
+        } else {
+            AppointmentStatus newStatus = request.status() != null ? request.status() : appointment.getStatus();
+            validatePaymentMethodForCompletion(newStatus, newPaymentMethod);
+        }
 
-        mapper.updateEntityFromDto(request, updatedService, newStartsAt, newEndsAt, appointment);
+        mapper.updateEntityFromDto(changes, updatedService, newStartsAt, newEndsAt, appointment);
+        Appointment saved = saveCheckingConflict(appointment);
 
-        Appointment saved = appointmentRepository.save(appointment);
+        if (completing) {
+            completeViaProcedure(id, newPaymentMethod);
+            saved = findAppointmentById(id);
+        }
+
         eventPublisher.publishEvent(new AppointmentUpdatedEvent(AppointmentCalendarData.from(saved)));
 
         return mapper.toResponse(saved);
@@ -165,6 +174,28 @@ public class AppointmentService {
         eventPublisher.publishEvent(new AppointmentCanceledEvent(saved.getId()));
 
         return mapper.toResponse(saved);
+    }
+    private void completeViaProcedure(Long id, PaymentMethod paymentMethod) {
+        try {
+            appointmentRepository.completeAppointment(
+                    id,
+                    paymentMethod != null ? paymentMethod.name() : null,
+                    LocalDateTime.now());
+        } catch (DataAccessException e) {
+            if (DatabaseErrorCodes.hasSqlState(e, DatabaseErrorCodes.NOT_FOUND)) {
+                throw new IllegalArgumentException("Agendamento não encontrado.");
+            }
+            if (DatabaseErrorCodes.hasSqlState(e, DatabaseErrorCodes.PAYMENT_METHOD_REQUIRED)) {
+                throw new PaymentMethodRequiredException("Informe a forma de pagamento para concluir o agendamento.");
+            }
+            if (DatabaseErrorCodes.hasSqlState(e, DatabaseErrorCodes.INVALID_STATUS)) {
+                throw new InvalidAppointmentStatusException("Apenas agendamentos com status SCHEDULED podem ser concluídos.");
+            }
+            if (DatabaseErrorCodes.hasSqlState(e, DatabaseErrorCodes.APPOINTMENT_NOT_STARTED)) {
+                throw new InvalidAppointmentTimeException("Não é possível concluir um agendamento cujo horário ainda não começou.");
+            }
+            throw e;
+        }
     }
 
     // 5. DETALHES DE UM AGENDAMENTO
@@ -268,20 +299,14 @@ public class AppointmentService {
         }
     }
 
-    private void validateNoConflict(LocalDateTime startsAt, LocalDateTime endsAt) {
-        if (appointmentRepository.existsConflict(startsAt, endsAt)) {
-            throw new AppointmentConflictException("Já existe um agendamento para este horário.");
-        }
-    }
-
-    private void validateNoConflictForUpdate(Long currentAppointmentId, LocalDateTime startsAt, LocalDateTime endsAt) {
-        boolean exists = appointmentRepository.findAll().stream()
-                .filter(a -> !a.getId().equals(currentAppointmentId))
-                .filter(a -> a.getStatus() != AppointmentStatus.CANCELED)
-                .anyMatch(a -> a.getStartsAt().isBefore(endsAt) && a.getEndsAt().isAfter(startsAt));
-
-        if (exists) {
-            throw new AppointmentConflictException("O novo horário solicitado colide com outro agendamento existente.");
+    private Appointment saveCheckingConflict(Appointment appointment) {
+        try {
+            return appointmentRepository.saveAndFlush(appointment);
+        } catch (DataAccessException e) {
+            if (DatabaseErrorCodes.hasSqlState(e, DatabaseErrorCodes.APPOINTMENT_CONFLICT)) {
+                throw new AppointmentConflictException("Já existe um agendamento para este horário.");
+            }
+            throw e;
         }
     }
 
