@@ -32,6 +32,7 @@ public class EmailService {
                 .build();
     }
 
+    @Async("emailSendExecutor")
     public void sendPasswordResetEmail(String toEmail, String userName, String resetLink) {
         try {
             String greeting = (userName != null && !userName.isBlank()) ? "Olá, " + userName : "Olá";
