@@ -4,8 +4,8 @@
 -- ===================================================================
 
 CREATE TABLE appointment_google_event (
-    id INTEGER GENERATED ALWAYS AS IDENTITY,
-    appointment_id INTEGER NOT NULL UNIQUE,
+    id BIGINT GENERATED ALWAYS AS IDENTITY,
+    appointment_id BIGINT NOT NULL UNIQUE,
     google_event_id VARCHAR(255),
 
     CONSTRAINT pk_appointment_google_event PRIMARY KEY (id),
