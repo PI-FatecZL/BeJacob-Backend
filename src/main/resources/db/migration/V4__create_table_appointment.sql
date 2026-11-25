@@ -4,9 +4,9 @@
 -- =====================================================
 
 CREATE TABLE appointment (
-         appointment_id INTEGER GENERATED ALWAYS AS IDENTITY,
-         service_id INTEGER NOT NULL,
-         user_id INTEGER NOT NULL,
+         appointment_id BIGINT GENERATED ALWAYS AS IDENTITY,
+         service_id BIGINT NOT NULL,
+         user_id BIGINT NOT NULL,
          starts_at TIMESTAMP NOT NULL,
          ends_at TIMESTAMP NOT NULL,
          notes TEXT,

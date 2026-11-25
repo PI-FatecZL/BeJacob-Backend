@@ -4,7 +4,7 @@
 -- =====================================================
 
 CREATE TABLE service (
-    id_service INTEGER GENERATED ALWAYS AS IDENTITY,
+    id_service BIGINT GENERATED ALWAYS AS IDENTITY,
     name VARCHAR(150) NOT NULL,
     description TEXT,
     duration_minutes INTEGER NOT NULL,

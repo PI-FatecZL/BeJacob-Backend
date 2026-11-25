@@ -1,6 +1,6 @@
 CREATE TABLE notification (
-          notification_id INTEGER GENERATED ALWAYS AS IDENTITY,
-          appointment_id INTEGER NOT NULL,
+          notification_id BIGINT GENERATED ALWAYS AS IDENTITY,
+          appointment_id BIGINT NOT NULL,
           message TEXT NOT NULL,
           is_read BOOLEAN NOT NULL DEFAULT FALSE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
