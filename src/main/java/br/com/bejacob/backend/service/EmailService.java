@@ -1,40 +1,46 @@
 package br.com.bejacob.backend.service;
 
-import br.com.bejacob.backend.exception.email.PasswordResetEmailException;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
-    @Value("${spring.mail.username}")
+    @Value("${brevo.api.key}")
+    private String apiKey;
+
+    @Value("${brevo.sender.email}")
     private String senderEmail;
 
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    @Value("${brevo.sender.name:BeJacob}")
+    private String senderName;
+
+    private final RestClient restClient;
+
+    public EmailService() {
+        this.restClient = RestClient.builder()
+                .baseUrl("https://api.brevo.com")
+                .build();
     }
 
     public void sendPasswordResetEmail(String toEmail, String userName, String resetLink) {
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(senderEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("BeJacob Redefinição da Senha");
-
             String greeting = (userName != null && !userName.isBlank()) ? "Olá, " + userName : "Olá";
 
             String html = """
                     <div style="font-family: Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 24px; border: 1px solid #e0e0e0; border-radius: 8px;">
                         <h2 style="color: #222; text-align: center;">Recuperação de Senha</h2>
                         <p>%s,</p>
-                        <p>Sua solicitação para redefinir a sua senha no em BeJacob (expira em 15 minutos).</p>
+                        <p>Sua solicitação para redefinir a sua senha no BeJacob (expira em 15 minutos).</p>
                         <p>Clique no botão abaixo para escolher uma nova senha:</p>
                         <div style="text-align: center; margin: 32px 0;">
                             <a href="%s" style="background-color: #1a73e8; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
@@ -44,10 +50,27 @@ public class EmailService {
                     </div>
                     """.formatted(greeting, resetLink);
 
-            helper.setText(html, true);
-            mailSender.send(message);
-        } catch (MessagingException e) {
-            throw new PasswordResetEmailException("Falha ao enviar e-mail de recuperação", e);
+            Map<String, Object> payload = Map.of(
+                    "sender", Map.of(
+                            "name", senderName,
+                            "email", senderEmail
+                    ),
+                    "to", List.of(Map.of("email", toEmail)),
+                    "subject", "BeJacob Redefinição da Senha",
+                    "htmlContent", html
+            );
+
+            restClient.post()
+                    .uri("/v3/smtp/email")
+                    .header("api-key", apiKey)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(payload)
+                    .retrieve()
+                    .toBodilessEntity();
+
+            log.info("E-mail de recuperação de senha enviado com sucesso para: {}", toEmail);
+        } catch (Exception e) {
+            log.error("Falha ao enviar e-mail de recuperação para {}: {}", toEmail, e.getMessage(), e);
         }
     }
 }
